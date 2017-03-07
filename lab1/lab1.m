@@ -32,7 +32,6 @@
 
 %% 1.1. Similarities
 I=imread('Data/0005_s.png'); % we have to be in the proper folder
-
 % ToDo: generate a matrix H which produces a similarity transformation
 %Similarity (isometry) consists in a rotation and traslation transformation
 x_tras = 20;
@@ -49,7 +48,7 @@ H(1:2,1:2)=R;
 H(1:2,3)=tras;
 H(3,3)=1;
 
-I2 = apply_H(I, H);
+I2 = apply_H(double(I), H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
 
@@ -80,13 +79,13 @@ Hbeta=[cos(beta) -sin(beta) 0; sin(beta) cos(beta) 0; 0 0 1];
 Hd=Ht*Hs;
 H=Hbeta*(Halpha')*Hd*Halpha;
 
-I2 = apply_H(I, H);
+I2 = apply_H(double(I), H);
 figure; imshow(I); figure; imshow(uint8(I2));
 
 % ToDo: decompose the affinity in four transformations: two
 % rotations, a scale, and a translation
 
-[U,D,V]=SVD(H);
+[U,D,V]=svd(H);
 Halpha_decom=V';
 Hd_decom=D;
 Hbeta_decom=U*V';
@@ -101,8 +100,8 @@ disp('Are matrixes equal? '+int2str(isequal(H,H_decom)));
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
 
-I3 = apply_H(I, H_decom);
-figure; imshow(I); figure; imshow(uint8(I3));
+I3 = apply_H(double(I), H_decom);
+figure; imshow(uint8(I3));
 
 
 %% 1.3 Projective transformations (homographies)
@@ -153,7 +152,7 @@ rows0 = zeros(3, n);
 rowsXY = -[X; Y; ones(1,n)];
 hx = [rowsXY; rows0; x.*X; x.*Y; x];
 hy = [rows0; rowsXY; y.*X; y.*Y; y];
-h = [hx hy];
+h = [hy hx];%[hx hy];
 if n == 4
     [U, ~, ~] = svd(h);
 else
@@ -161,7 +160,7 @@ else
 end
 Hp = (reshape(U(:,9), 3, 3)).';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-I2 = apply_H(I, Hp);
+I2 = apply_H(double(I), Hp);
 figure; imshow(I); figure; imshow(uint8(I2));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -225,7 +224,7 @@ line_infinity=cross(vp_h,vp_v); %This line should be at infinity but is not
 H=zeros(3);
 H(3,:)=line_infinity;
 
-I2 = apply_H(I, H);
+I2 = apply_H(double(I), H);
 figure; imshow(uint8(I2));
 
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
