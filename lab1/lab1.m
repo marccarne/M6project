@@ -250,6 +250,43 @@ disp('Angle between vertical lines: ' + int2str(angle_v));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. OPTIONAL: Metric Rectification in a single step
 % Use 5 pairs of orthogonal lines (pages 55-57, Hartley-Zisserman book)
+indices = [424,240,48,534,119;
+           712,565,493,227,224];
+           
+for i = 1:5
+
+idx = indices(1,i)
+p1 = [A(idx,1) A(idx,2) 1]';
+p2 = [A(idx,3) A(idx,4) 1]';
+idx = indices(2,i)
+p3 = [A(idx,1) A(idx,2) 1]';
+p4 = [A(idx,3) A(idx,4) 1]';
+l=cross(p1,p2);
+m=cross(p3,p4);
+
+M(i,:) = [l(1)*m(1),
+          (l(1)*m(2)+l(2)*m(1))/2,
+          l(2)*m(2),
+          (l(1)*m(3)+l(3)*m(1))/2,
+          (l(2)*m(3)+l(3)*m(2))/2,
+          l(3)*m(3)];
+
+end
+
+C = null(M);
+a = C(1);
+b = C(2);
+c = C(3);
+d = C(4);
+e = C(5);
+f = C(6);
+Conic = [a,b/2,d/2;
+         b/2,c,e/2;
+         d/2,e/2,f];
+[U,D,V] = svd(Conic);
+H = U;
+
+Iopt = apply_H(I,H);
 
 %% 5. OPTIONAL: Affine Rectification of the left facade of image 0000
 
