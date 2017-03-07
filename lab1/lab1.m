@@ -35,11 +35,12 @@ I=imread('Data/0005_s.png'); % we have to be in the proper folder
 
 % ToDo: generate a matrix H which produces a similarity transformation
 %Similarity (isometry) consists in a rotation and traslation transformation
-x_tras = ;
-y_tras = ;
+x_tras = 20;
+y_tras = 30;
 tras = [x_tras y_tras]';
 
-alpha = ; %Must be in radians
+alpha = 45 ; %Must be in degrees
+alpha = alpha * (2*pi/360); % Conversion to radians
 R=[cos(alpha) -sin(alpha); sin(alpha) cos(alpha)];
 
 %Transformation matrix H
@@ -57,20 +58,22 @@ figure; imshow(I); figure; imshow(uint8(I2));
 % ToDo: generate a matrix H which produces an affine transformation (knowing that the affine matrix transformation is form by 4 transformations)
 
 %Traslation matrix
-x_tras=;
-y_tras=;
+x_tras= x_tras;
+y_tras= y_tras;
 Ht=[1 0 x_tras;0 1 y_tras; 0 0 1];
 
 %Scaling matrix
-s_factor=;
+s_factor= 1;
 Hs=[s_factor 0 0;0 s_factor 0;0 0 1];
 
 %Rotation matrix --> alpha
-alpha=;
+alpha = 20 ; %Must be in degrees
+alpha = alpha * (2*pi/360); % Conversion to radians;
 Halpha=[cos(alpha) -sin(alpha) 0; sin(alpha) cos(alpha) 0; 0 0 1];
 
 %Rotation matrix --> beta
-beta=;
+beta = 25 ; %Must be in degrees
+beta = beta * (2*pi/360); % Conversion to radians;;
 Hbeta=[cos(beta) -sin(beta) 0; sin(beta) cos(beta) 0; 0 0 1];
 
 %Matrix traslation+scaling
