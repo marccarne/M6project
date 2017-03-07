@@ -283,8 +283,7 @@ f = C(6);
 Conic = [a,b/2,d/2;
          b/2,c,e/2;
          d/2,e/2,f];
-[U,D,V] = svd(Conic);
-H = U;
+H = chol(Conic);
 
 Iopt = apply_H(I,H);
 
