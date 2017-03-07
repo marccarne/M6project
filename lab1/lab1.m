@@ -106,13 +106,33 @@ figure; imshow(I); figure; imshow(uint8(I3));
 
 
 %% 1.3 Projective transformations (homographies)
-
 % ToDo: generate a matrix H which produces a projective transformation
-%Extract points in image_1 and its equivalents in image_2
 
+% choose the image points
+I=imread('Data/0000_s.png');
+A = load('Data/0000_s_info_lines.txt');
+%Extract points in image_1 and its equivalents in image_2
+i = 424;
+pin(:,1) = [A(i,1) A(i,2)]';
+i = 240;
+pin(:,2) = [A(i,1) A(i,2)]';
+i = 712;
+pin(:,3) = [A(i,1) A(i,2)]';
+i = 565;
+pin(:,4) = [A(i,1) A(i,2)]';
+
+B = load('Data/0001_s_info_lines.txt');
+i = 511;
+pout(:,1) = [B(i,1) B(i,2)]';
+i = 424;
+pout(:,2) = [B(i,1) B(i,2)]';
+i = 802;
+pout(:,3) = [B(i,1) B(i,2)]';
+i = 766;
+pout(:,4) = [B(i,1) B(i,2)]';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Implemented as David Young, University of Sussex, February 2008
+%   Implemented David Young's version, University of Sussex, February 2008
 %   takes a 2xN matrix of input vectors and a 2xN matrix of output vectors,
 %   and returns the homogeneous transformation matrix that maps the inputs 
 %   to the outputs, to some approximation if there is noise.
