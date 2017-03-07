@@ -146,27 +146,27 @@ H= [H; 0.0004,0.00002,0.5];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 I2 = apply_H(double(I), H);
-figure(1); imshow(I); figure(2); imshow(uint8(I2)); title()
+figure(1); imshow(I); figure(2); imshow(uint8(I2)); title('Perspective transformation');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Affine Rectification
 
 
 % choose the image points
-I=imread('Data/0000_s.png');
-A = load('Data/0000_s_info_lines.txt');
+I=imread('Data/0001_s.png');
+A = load('Data/0001_s_info_lines.txt');
 
 % indices of lines
-i = 424;
+i = 614;
 p1 = [A(i,1) A(i,2) 1]';
 p2 = [A(i,3) A(i,4) 1]';
-i = 240;
+i = 188;
 p3 = [A(i,1) A(i,2) 1]';
 p4 = [A(i,3) A(i,4) 1]';
-i = 712;
+i = 511;
 p5 = [A(i,1) A(i,2) 1]';
 p6 = [A(i,3) A(i,4) 1]';
-i = 565;
+i = 424;
 p7 = [A(i,1) A(i,2) 1]';
 p8 = [A(i,3) A(i,4) 1]';
 
@@ -177,17 +177,14 @@ l2=cross(p3,p4);
 l3=cross(p5,p6);
 l4=cross(p7,p8);
 
-%l1 and l2 are the horizontal ones
-%l3 and l4 are the vertical ones
-
 % show the chosen lines in the image
 figure(1);imshow(I);
 hold on;
 t=1:0.1:1000;
 plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
 plot(t, -(l2(1)*t + l2(3)) / l2(2), 'y');
-plot(t, -(l3(1)*t + l3(3)) / l3(2), 'y');
-plot(t, -(l4(1)*t + l4(3)) / l4(2), 'y');
+plot(t, -(l3(1)*t + l3(3)) / l3(2), 'r');
+plot(t, -(l4(1)*t + l4(3)) / l4(2), 'r');
 
 % ToDo: compute the homography that affinely rectifies the image
 %To affinely rectify the image we have to do that the line at infinity that
@@ -197,10 +194,10 @@ plot(t, -(l4(1)*t + l4(3)) / l4(2), 'y');
 %Find the vanishing point between lines, cross product of two parallel
 %lines
 
-%Vanishing point for horizontal lines
+%Vanishing point for yellow lines
 vp_h=cross(l1,l2);
 
-%Vanishing point for vertical lines
+%Vanishing point for red lines
 vp_v=cross(l3,l4);
 
 %Find line at infinity as we know is the cross product of vanishing points
@@ -227,8 +224,8 @@ hold on;
 t=1:0.1:1000;
 plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
 plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'y');
-plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'y');
-plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'y');
+plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'r');
+plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'r');
 
 % ToDo: to evaluate the results, compute the angle between the different pair 
 % of lines before and after the image transformation
