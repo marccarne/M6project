@@ -160,13 +160,13 @@ A = load('Data/0001_s_info_lines.txt');
 i = 614;
 p1 = [A(i,1) A(i,2) 1]';
 p2 = [A(i,3) A(i,4) 1]';
-i = 188;
+i = 159;
 p3 = [A(i,1) A(i,2) 1]';
 p4 = [A(i,3) A(i,4) 1]';
-i = 511;
+i = 802;
 p5 = [A(i,1) A(i,2) 1]';
 p6 = [A(i,3) A(i,4) 1]';
-i = 424;
+i = 766;
 p7 = [A(i,1) A(i,2) 1]';
 p8 = [A(i,3) A(i,4) 1]';
 
@@ -203,23 +203,27 @@ vp_v=cross(l3,l4);
 %Find line at infinity as we know is the cross product of vanishing points
 line_infinity=cross(vp_h,vp_v); %This line should be at infinity but is not
 
+% Haff=[1     , 0     ,  0 ;
+%       0     , 1     ,  0 ;
+%       0     , 0     ,  1];
 H=zeros(3);
 H(1,1)=1;
 H(2,2)=1;
-H(3,:)=line_infinity;
+H(3,:)=line_infinity/norm(line_infinity);
 
-I2 = apply_H(double(I), H);
-figure(2); imshow(uint8(I2));
+% H = Haff * H;
+
+I2 = apply_H2(double(permute(I,[2 1 3])), H);
+figure(2); imshow(uint8(permute(I2,[2 1 3])));
 
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
 %Transformed lines are applying the transformation matrix: inv(H)'*line
-lr1=(inv(H)')*l1;
-lr2=(inv(H)')*l2;
-lr3=(inv(H)')*l3;
-lr4=(inv(H)')*l4;
+lr1=(inv(H'))*l1;
+lr2=(inv(H'))*l2;
+lr3=(inv(H'))*l3;
+lr4=(inv(H'))*l4;
 
 % show the transformed lines in the transformed image
-figure(3);imshow(uint8(I2));
 hold on;
 t=1:0.1:1000;
 plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
