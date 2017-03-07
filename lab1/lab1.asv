@@ -77,10 +77,10 @@ Hbeta=[cos(beta) -sin(beta) 0; sin(beta) cos(beta) 0; 0 0 1];
 
 %Matrix traslation+scaling
 Hd=Ht*Hs;
-H=Hbeta*Hd*Halpha;
+H=Hbeta*(Halpha')*Hd*Halpha;
 
 I2 = apply_H(double(I), H);
-figure(1); imshow(I); figure(2); imshow(uint8(I2));
+figure; imshow(I); figure; imshow(uint8(I2));
 
 % ToDo: decompose the affinity in four transformations: two
 % rotations, a scale, and a translation
@@ -95,13 +95,13 @@ H_decom=Hbeta_decom*Halpha_decom'*D*Halpha_decom;
 
 % ToDo: verify that the product of the four previous transformations
 % produces the same matrix H as above
-disp('Are matrixes equal? '+int2str(isequal(H,H_decom)))
+disp('Are matrixes equal? '+int2str(isequal(H,H_decom)));
 
 % ToDo: verify that the proper sequence of the four previous
 % transformations over the image I produces the same image I2 as before
 
 I3 = apply_H(double(I), H_decom);
-figure(3); imshow(uint8(I3));
+figure; imshow(uint8(I3));
 
 
 %% 1.3 Projective transformations (homographies)
@@ -152,7 +152,7 @@ rows0 = zeros(3, n);
 rowsXY = -[X; Y; ones(1,n)];
 hx = [rowsXY; rows0; x.*X; x.*Y; x];
 hy = [rows0; rowsXY; y.*X; y.*Y; y];
-h = [hx hy];
+h = [hy hx];%[hx hy];
 if n == 4
     [U, ~, ~] = svd(h);
 else
