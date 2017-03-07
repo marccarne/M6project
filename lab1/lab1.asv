@@ -38,7 +38,7 @@ x_tras = 20;
 y_tras = 30;
 tras = [x_tras y_tras]';
 
-alpha = 45 ; %Must be in degrees
+alpha = -45 ; %Must be in degrees
 alpha = alpha * (2*pi/360); % Conversion to radians
 R=[cos(alpha) -sin(alpha); sin(alpha) cos(alpha)];
 
@@ -49,7 +49,7 @@ H(1:2,3)=tras;
 H(3,3)=1;
 
 I2 = apply_H(double(I), H);
-figure(1); imshow(I); figure(2); imshow(uint8(I2));
+figure(1); imshow(I); figure(2); imshow(uint8(I2)); title('Similarity transformation');
 
 
 %% 1.2. Affinities
@@ -64,8 +64,9 @@ At = [x_tras;y_tras];
 
 %Scaling matrix
 s_factor= 0.5;
+s_factor2= .75; 
 %Hs=[s_factor 0 0;0 s_factor 0;0 0 1];
-A_lambda = [0.5 , 0; 0 , 0.75];
+A_lambda = [s_factor , 0; 0 , s_factor2];
 
 %Rotation matrix --> alpha
 alpha = 15 ; %Must be in degrees
@@ -116,61 +117,36 @@ figure(3); imshow(uint8(I3)); title('Decomposed affine transformation');
 %% 1.3 Projective transformations (homographies)
 % ToDo: generate a matrix H which produces a projective transformation
 
-% choose the image points
-I=imread('Data/0000_s.png');
-A = load('Data/0000_s_info_lines.txt');
-%Extract points in image_1 and its equivalents in image_2
-i = 424;
-pin(:,1) = [A(i,1) A(i,2)]';
-i = 240;
-pin(:,2) = [A(i,1) A(i,2)]';
-i = 712;
-pin(:,3) = [A(i,1) A(i,2)]';
-i = 565;
-pin(:,4) = [A(i,1) A(i,2)]';
+%Traslation matrix
+x_tras= x_tras;
+y_tras= y_tras;
+At = [x_tras;y_tras];
 
-B = load('Data/0001_s_info_lines.txt');
-i = 511;
-pout(:,1) = [B(i,1) B(i,2)]';
-i = 424;
-pout(:,2) = [B(i,1) B(i,2)]';
-i = 802;
-pout(:,3) = [B(i,1) B(i,2)]';
-i = 766;
-pout(:,4) = [B(i,1) B(i,2)]';
+%Scaling matrix
+s_factor= 2;
+s_factor2= 1; 
+A_lambda = [s_factor , 0; 0 , s_factor2];
+
+%Rotation matrix --> alpha
+alpha = 15 ; %Must be in degrees
+alpha = alpha * (2*pi/360); % Conversion to radians;
+A_alpha = [cos(alpha), -sin(alpha) ; sin(alpha), cos(alpha)];
+
+%Rotation matrix --> beta
+beta = 45 ; %ºMust be in degrees
+beta = beta * (2*pi/360); % Conversion to radians;;
+A_beta = [cos(beta), -sin(beta) ; sin(beta), cos(beta)];
+A_mbeta = [cos(-beta), -sin(-beta) ; sin(-beta), cos(-beta)];
+
+%Matrix traslation+scaling
+A = A_alpha*A_mbeta*A_lambda*A_beta;
+
+H= [A,At];
+H= [H; 0.0004,0.00002,0.5];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Implemented David Young's version, University of Sussex, February 2008
-%   takes a 2xN matrix of input vectors and a 2xN matrix of output vectors,
-%   and returns the homogeneous transformation matrix that maps the inputs 
-%   to the outputs, to some approximation if there is noise.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if ~isequal(size(pin), size(pout))
-    error('Points matrices different sizes');
-end
-if size(pin, 1) ~= 2
-    error('Points matrices must have two rows');
-end
-n = size(pin, 2);
-if n < 4
-    error('Need at least 4 matching points');
-end
-% Solve equations using SVD
-x = pout(1, :); y = pout(2,:); X = pin(1,:); Y = pin(2,:);
-rows0 = zeros(3, n);
-rowsXY = -[X; Y; ones(1,n)];
-hx = [ rows0; rowsXY; x.*X; x.*Y; x];
-hy = [rowsXY; rows0;  y.*X; y.*Y; y];
-h = [hx hy];
-if n == 4
-    [U, ~, ~] = svd(h);
-else
-    [U, ~, ~] = svd(h, 'econ');
-end
-Hp = (reshape(U(:,9), 3, 3)).';
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-I2 = apply_H(double(I), Hp);
-figure(1); imshow(I); figure(2); imshow(uint8(I2));
+I2 = apply_H(double(I), H);
+figure(1); imshow(I); figure(2); imshow(uint8(I2)); title()
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Affine Rectification
