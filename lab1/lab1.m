@@ -72,7 +72,7 @@ alpha = alpha * (2*pi/360); % Conversion to radians;
 Halpha=[cos(alpha) -sin(alpha) 0; sin(alpha) cos(alpha) 0; 0 0 1];
 
 %Rotation matrix --> beta
-beta = 25 ; %Must be in degrees
+beta = 25 ; %ºMust be in degrees
 beta = beta * (2*pi/360); % Conversion to radians;;
 Hbeta=[cos(beta) -sin(beta) 0; sin(beta) cos(beta) 0; 0 0 1];
 
