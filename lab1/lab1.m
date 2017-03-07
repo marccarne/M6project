@@ -38,7 +38,7 @@ x_tras = 20;
 y_tras = 30;
 tras = [x_tras y_tras]';
 
-alpha = 45 ; %Must be in degrees
+alpha = -45 ; %Must be in degrees
 alpha = alpha * (2*pi/360); % Conversion to radians
 R=[cos(alpha) -sin(alpha); sin(alpha) cos(alpha)];
 
@@ -49,7 +49,7 @@ H(1:2,3)=tras;
 H(3,3)=1;
 
 I2 = apply_H(double(I), H);
-figure; imshow(I); figure; imshow(uint8(I2));
+figure(1); imshow(I); figure(2); imshow(uint8(I2)); title('Similarity transformation');
 
 
 %% 1.2. Affinities
@@ -59,28 +59,38 @@ figure; imshow(I); figure; imshow(uint8(I2));
 %Traslation matrix
 x_tras= x_tras;
 y_tras= y_tras;
-Ht=[1 0 x_tras;0 1 y_tras; 0 0 1];
+% Ht=[1 0 x_tras;0 1 y_tras; 0 0 1];
+At = [x_tras;y_tras];
 
 %Scaling matrix
-s_factor= 1;
-Hs=[s_factor 0 0;0 s_factor 0;0 0 1];
+s_factor= 0.5;
+s_factor2= .75; 
+%Hs=[s_factor 0 0;0 s_factor 0;0 0 1];
+A_lambda = [s_factor , 0; 0 , s_factor2];
 
 %Rotation matrix --> alpha
-alpha = 20 ; %Must be in degrees
+alpha = 15 ; %Must be in degrees
 alpha = alpha * (2*pi/360); % Conversion to radians;
-Halpha=[cos(alpha) -sin(alpha) 0; sin(alpha) cos(alpha) 0; 0 0 1];
+%Halpha=[cos(alpha) -sin(alpha) 0; sin(alpha) cos(alpha) 0; 0 0 1];
+A_alpha = [cos(alpha), -sin(alpha) ; sin(alpha), cos(alpha)];
 
 %Rotation matrix --> beta
-beta = 25 ; %ºMust be in degrees
+beta = 40 ; %ºMust be in degrees
 beta = beta * (2*pi/360); % Conversion to radians;;
-Hbeta=[cos(beta) -sin(beta) 0; sin(beta) cos(beta) 0; 0 0 1];
+%Hbeta=[cos(beta) -sin(beta) 0; sin(beta) cos(beta) 0; 0 0 1];
+A_beta = [cos(beta), -sin(beta) ; sin(beta), cos(beta)];
+A_mbeta = [cos(-beta), -sin(-beta) ; sin(-beta), cos(-beta)];
 
 %Matrix traslation+scaling
-Hd=Ht*Hs;
-H=Hbeta*Hd*Halpha;
+% Hd=Ht*Hs;
+% H=Hbeta*Hd*Halpha;
+A = A_alpha*A_mbeta*A_lambda*A_beta;
+
+H= [A,At];
+H= [H; 0,0,1];
 
 I2 = apply_H(double(I), H);
-figure(1); imshow(I); figure(2); imshow(uint8(I2));
+figure(1); imshow(I); figure(2); imshow(uint8(I2)); title('Affine transformation');
 
 % ToDo: decompose the affinity in four transformations: two
 % rotations, a scale, and a translation
@@ -101,7 +111,7 @@ disp('Are matrixes equal? '+int2str(isequal(H,H_decom)))
 % transformations over the image I produces the same image I2 as before
 
 I3 = apply_H(double(I), H_decom);
-figure(3); imshow(uint8(I3));
+figure(3); imshow(uint8(I3)); title('Decomposed affine transformation');
 
 
 %% 1.3 Projective transformations (homographies)
@@ -150,8 +160,8 @@ end
 x = pout(1, :); y = pout(2,:); X = pin(1,:); Y = pin(2,:);
 rows0 = zeros(3, n);
 rowsXY = -[X; Y; ones(1,n)];
-hx = [rowsXY; rows0; x.*X; x.*Y; x];
-hy = [rows0; rowsXY; y.*X; y.*Y; y];
+hx = [ rows0; rowsXY; x.*X; x.*Y; x];
+hy = [rowsXY; rows0;  y.*X; y.*Y; y];
 h = [hx hy];
 if n == 4
     [U, ~, ~] = svd(h);
@@ -161,7 +171,7 @@ end
 Hp = (reshape(U(:,9), 3, 3)).';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 I2 = apply_H(double(I), Hp);
-figure; imshow(I); figure; imshow(uint8(I2));
+figure(1); imshow(I); figure(2); imshow(uint8(I2));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Affine Rectification
@@ -196,7 +206,7 @@ l4=cross(p7,p8);
 %l3 and l4 are the vertical ones
 
 % show the chosen lines in the image
-figure;imshow(I);
+figure(1);imshow(I);
 hold on;
 t=1:0.1:1000;
 plot(t, -(l1(1)*t + l1(3)) / l1(2), 'y');
@@ -222,20 +232,22 @@ vp_v=cross(l3,l4);
 line_infinity=cross(vp_h,vp_v); %This line should be at infinity but is not
 
 H=zeros(3);
+H(1,1)=1;
+H(2,2)=1;
 H(3,:)=line_infinity;
-
+Hinv=inv(H);
 I2 = apply_H(double(I), H);
-figure; imshow(uint8(I2));
+figure(2); imshow(uint8(I2));
 
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
 %Transformed lines are applying the transformation matrix: inv(H)'*line
-lr1=(inv(H)')*l1';
-lr2=(inv(H)')*l2';
-lr3=(inv(H)')*l3';
-lr4=(inv(H)')*l4';
+lr1=(inv(H)')*l1;
+lr2=(inv(H)')*l2;
+lr3=(inv(H)')*l3;
+lr4=(inv(H)')*l4;
 
 % show the transformed lines in the transformed image
-figure;imshow(uint8(I2));
+figure(3);imshow(uint8(I2));
 hold on;
 t=1:0.1:1000;
 plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');

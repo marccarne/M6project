@@ -5,10 +5,13 @@ function [rectifiedImage] = apply_H (I, H)
 %           1, rows(I) ,1          , rows(I)    ;
 %           1, 1       ,1          , 1          ]
 
+columns = size(I,2);
+rows = size(I,1);
+
 %Matlab ver.
-corners = [1,   1       , size(I,2) , size(I,2) ;
-           1, size(I,2) ,   1       , size(I,1) ;
-           1,   1       ,   1       , 1         ];
+corners = [1,   1       , columns   , columns ;
+           1, rows      ,   1       , rows    ;
+           1,   1       ,   1       , 1       ];
        
 rectifiedCorners = H * corners;
 
@@ -18,10 +21,16 @@ rectifiedCorners = H * corners;
 % maxRow = max(ceil (max(rectifiedCorners(2,:))),rows(I));
 
 %Matlab ver
-minCol = min(floor(min(rectifiedCorners(1,:))),1);
-maxCol = max(ceil (max(rectifiedCorners(1,:))),size(I,2));
-minRow = min(floor(min(rectifiedCorners(2,:))),1);
-maxRow = max(ceil (max(rectifiedCorners(2,:))),size(I,1));
+% minCol = min(floor(min(rectifiedCorners(1,:))),1);
+% maxCol = max(ceil (max(rectifiedCorners(1,:))),columns);
+% minRow = min(floor(min(rectifiedCorners(2,:))),1);
+% maxRow = max(ceil (max(rectifiedCorners(2,:))),rows);
+
+minCol = floor(min(rectifiedCorners(1,:)));
+maxCol = ceil (max(rectifiedCorners(1,:)));
+minRow = floor(min(rectifiedCorners(2,:)));
+maxRow = ceil (max(rectifiedCorners(2,:)));
+
 
 %rectifiedWidth  = maxCol - minCol + 1;
 %rectifiedHeight = maxRow - minRow + 1;
