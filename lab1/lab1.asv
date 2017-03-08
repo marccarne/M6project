@@ -208,7 +208,7 @@ H(1,1)=1;
 H(2,2)=1;
 H(3,:)=line_infinity/norm(line_infinity);
 
-I2 = apply_H(double(permute(I,[2 1 3])), H);
+I2 = apply_H2(double(permute(I,[2 1 3])), H);
 figure(2); imshow(uint8(permute(I2,[2 1 3])));title('Affine rectification');
 
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
@@ -245,6 +245,8 @@ disp('Angle between vertical lines: ' + int2str(angle_v));
 %       the metric rectification) with the chosen lines printed on it.
 %       Compute also the angles between the pair of lines before and after
 %       rectification.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. OPTIONAL: Metric Rectification in a single step

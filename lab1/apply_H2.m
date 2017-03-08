@@ -1,7 +1,8 @@
 % Alternative version of apply_H function which is used for affine
 % rectification due to bugs in Octave to Matlab migration of original
 % apply_H.
-% 
+% Special thanks to Laura Perez, Cristina Bustos and Xian Lopez for their
+% collaboration.
 function [transformedImage] = apply_H2(I, H)
 
     % 1. compute the size of the transformed image
