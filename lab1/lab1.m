@@ -347,11 +347,12 @@ plot(t, -(lrr4(1)*t + lrr4(3)) / lrr4(2), 'y');
 
 I=imread('Data/0000_s.png'); % we have to be in the proper folder
 A = load('Data/0000_s_info_lines.txt');
-indices = [424,240,48,534,119;
-           712,565,493,227,224];
-           
-for i = 1:5
+indices = [493,424,227,357,186;
+           48,712,534,119,508];
 
+% Getting the 5 orthogonal lines in the real world           
+for i = 1:5
+disp (['Using lines ',num2str(indices(1,i)),' and ', num2str(indices(2,i))])
 idx = indices(1,i);
 p1 = [A(idx,1) A(idx,2) 1]';
 p2 = [A(idx,3) A(idx,4) 1]';
@@ -360,7 +361,7 @@ p3 = [A(idx,1) A(idx,2) 1]';
 p4 = [A(idx,3) A(idx,4) 1]';
 l=cross(p1,p2);
 m=cross(p3,p4);
-
+% Composing the 5x6 constrains matrix
 M(i,:) = [l(1)*m(1),
           (l(1)*m(2)+l(2)*m(1))/2,
           l(2)*m(2),
@@ -370,6 +371,7 @@ M(i,:) = [l(1)*m(1),
 
 end
 
+% Creating the conic from the null space of M
 C = null(M);
 a = C(1);
 b = C(2);
@@ -377,11 +379,15 @@ c = C(3);
 d = C(4);
 e = C(5);
 f = C(6);
+
 Conic = [a,b/2,d/2;
          b/2,c,e/2;
          d/2,e/2,f];
+         
+% representing our conic C as C = U*Diag(1,1,0)*U'         
 H = chol(Conic);
 
+% The homography is U
 Iopt = apply_H(I,H);
 
 %% 5. OPTIONAL: Affine Rectification of the left facade of image 0000
