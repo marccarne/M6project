@@ -291,12 +291,12 @@ m2 = cross(A,B);
 figure;imshow(uint8(I_pa));
 title('Affine transformation with red orthogonal line pairs' )
 hold on;
-t=1:0.1:1000;
+t=1:10:1000;
 % affinely transformed lines
-plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
-plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'y');
-plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'y');
-plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'y');
+plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'b');
+plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'b');
+plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'b');
+plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'b');
 
 % orthogonal lines on affinely transformed 
 plot(t, -(n1(1)*t + n1(3)) / n1(2), 'r');
@@ -332,14 +332,14 @@ I_sa = apply_H(I_pa, H_sa);
 [lrr1, lrr2, lrr3, lrr4] = rectifyLinesMetric(H_sa, pp1, pp2, pp3, pp4, pp5, pp6, pp7, pp8);
 
 figure;imshow(uint8(I_sa));
-title('Metric transformation with chosen orthogonal line pairs')
+title('Metric transformation with orthogonal line pairs')
 hold on;
-t=1:0.1:1000;
+t=1:10:1000;
 % metrically transformed lines
-plot(t, -(lrr1(1)*t + lrr1(3)) / lrr1(2), 'y');
-plot(t, -(lrr2(1)*t + lrr2(3)) / lrr2(2), 'y');
-plot(t, -(lrr3(1)*t + lrr3(3)) / lrr3(2), 'y');
-plot(t, -(lrr4(1)*t + lrr4(3)) / lrr4(2), 'y');
+plot(t, -(lrr1(1)*t + lrr1(3)) / lrr1(2), 'b');
+plot(t, -(lrr2(1)*t + lrr2(3)) / lrr2(2), 'b');
+plot(t, -(lrr3(1)*t + lrr3(3)) / lrr3(2), 'b');
+plot(t, -(lrr4(1)*t + lrr4(3)) / lrr4(2), 'b');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. OPTIONAL: Metric Rectification in a single step
