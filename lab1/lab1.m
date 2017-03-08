@@ -153,20 +153,20 @@ figure(1); imshow(I); figure(2); imshow(uint8(I2)); title('Perspective transform
 
 
 % choose the image points
-I=imread('Data/0001_s.png');
-A = load('Data/0001_s_info_lines.txt');
+I=imread('Data/0000_s.png');
+A = load('Data/0000_s_info_lines.txt');
 
 % indices of lines
-i = 614;
+i = 424;
 p1 = [A(i,1) A(i,2) 1]';
 p2 = [A(i,3) A(i,4) 1]';
-i = 159;
+i = 240;
 p3 = [A(i,1) A(i,2) 1]';
 p4 = [A(i,3) A(i,4) 1]';
-i = 802;
+i = 712;
 p5 = [A(i,1) A(i,2) 1]';
 p6 = [A(i,3) A(i,4) 1]';
-i = 766;
+i = 565;
 p7 = [A(i,1) A(i,2) 1]';
 p8 = [A(i,3) A(i,4) 1]';
 
@@ -203,18 +203,13 @@ vp_v=cross(l3,l4);
 %Find line at infinity as we know is the cross product of vanishing points
 line_infinity=cross(vp_h,vp_v); %This line should be at infinity but is not
 
-% Haff=[1     , 0     ,  0 ;
-%       0     , 1     ,  0 ;
-%       0     , 0     ,  1];
 H=zeros(3);
 H(1,1)=1;
 H(2,2)=1;
 H(3,:)=line_infinity/norm(line_infinity);
 
-% H = Haff * H;
-
 I2 = apply_H2(double(permute(I,[2 1 3])), H);
-figure(2); imshow(uint8(permute(I2,[2 1 3])));
+figure(2); imshow(uint8(permute(I2,[2 1 3])));title('Affine rectification');
 
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
 %Transformed lines are applying the transformation matrix: inv(H)'*line

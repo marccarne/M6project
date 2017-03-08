@@ -153,20 +153,20 @@ figure(1); imshow(I); figure(2); imshow(uint8(I2)); title('Perspective transform
 
 
 % choose the image points
-I=imread('Data/0001_s.png');
-A = load('Data/0001_s_info_lines.txt');
+I=imread('Data/0000_s.png');
+A = load('Data/0000_s_info_lines.txt');
 
 % indices of lines
-i = 614;
+i = 424;
 p1 = [A(i,1) A(i,2) 1]';
 p2 = [A(i,3) A(i,4) 1]';
-i = 159;
+i = 240;
 p3 = [A(i,1) A(i,2) 1]';
 p4 = [A(i,3) A(i,4) 1]';
-i = 802;
+i = 712;
 p5 = [A(i,1) A(i,2) 1]';
 p6 = [A(i,3) A(i,4) 1]';
-i = 766;
+i = 565;
 p7 = [A(i,1) A(i,2) 1]';
 p8 = [A(i,3) A(i,4) 1]';
 
@@ -203,18 +203,13 @@ vp_v=cross(l3,l4);
 %Find line at infinity as we know is the cross product of vanishing points
 line_infinity=cross(vp_h,vp_v); %This line should be at infinity but is not
 
-Haff=[1     , 0     ,  0 ;
-      0     , 1     ,  0 ;
-      0     , 0     ,  1];
 H=zeros(3);
 H(1,1)=1;
 H(2,2)=1;
-H(3,:)=line_infinity;
+H(3,:)=line_infinity/norm(line_infinity);
 
-H = Haff * H;
-
-I2 = apply_H(double(I), H);
-figure(2); imshow(uint8(I2));
+I2 = apply_H(double(permute(I,[2 1 3])), H);
+figure(2); imshow(uint8(permute(I2,[2 1 3])));title('Affine rectification');
 
 % ToDo: compute the transformed lines lr1, lr2, lr3, lr4
 %Transformed lines are applying the transformation matrix: inv(H)'*line
@@ -254,6 +249,42 @@ disp('Angle between vertical lines: ' + int2str(angle_v));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. OPTIONAL: Metric Rectification in a single step
 % Use 5 pairs of orthogonal lines (pages 55-57, Hartley-Zisserman book)
+indices = [424,240,48,534,119;
+           712,565,493,227,224];
+           
+for i = 1:5
+
+idx = indices(1,i)
+p1 = [A(idx,1) A(idx,2) 1]';
+p2 = [A(idx,3) A(idx,4) 1]';
+idx = indices(2,i)
+p3 = [A(idx,1) A(idx,2) 1]';
+p4 = [A(idx,3) A(idx,4) 1]';
+l=cross(p1,p2);
+m=cross(p3,p4);
+
+M(i,:) = [l(1)*m(1),
+          (l(1)*m(2)+l(2)*m(1))/2,
+          l(2)*m(2),
+          (l(1)*m(3)+l(3)*m(1))/2,
+          (l(2)*m(3)+l(3)*m(2))/2,
+          l(3)*m(3)];
+
+end
+
+C = null(M);
+a = C(1);
+b = C(2);
+c = C(3);
+d = C(4);
+e = C(5);
+f = C(6);
+Conic = [a,b/2,d/2;
+         b/2,c,e/2;
+         d/2,e/2,f];
+H = chol(Conic);
+
+Iopt = apply_H(I,H);
 
 %% 5. OPTIONAL: Affine Rectification of the left facade of image 0000
 
