@@ -246,33 +246,116 @@ disp('Angle between vertical lines: ' + int2str(angle_v));
 %       Compute also the angles between the pair of lines before and after
 %       rectification.
 
-% indices of lines
-i = 424;
-p1 = [A(i,1) A(i,2) 1]';
-p2 = [A(i,3) A(i,4) 1]';
-i = 240;
-p3 = [A(i,1) A(i,2) 1]';
-p4 = [A(i,3) A(i,4) 1]';
-i = 712;
-p5 = [A(i,1) A(i,2) 1]';
-p6 = [A(i,3) A(i,4) 1]';
-i = 565;
-p7 = [A(i,1) A(i,2) 1]';
-p8 = [A(i,3) A(i,4) 1]';
+I = imread('Data/0000_s.png');
+data = load('Data/0000_s_info_lines.txt');
 
+% 0000_s.png
+i1 = 227; %up
+i2 = 367; %down
+i3 = 534; %left
+i4 = 576; %right
+
+[l1, l2, l3, l4] = computeLines(data, i1, i2, i3, i4);
+
+% vanishing point l1, l2 (horizontal lines)
+vp_12 = cross(l1,l2);
+vp_12 = [vp_12(1)/vp_12(3), vp_12(2)/vp_12(3), vp_12(3)/vp_12(3)];
+
+% vanishing point l3, l4 (vertical lines)  
+vp_34 = cross(l3,l4);
+vp_34 = [vp_34(1)/vp_34(3), vp_34(2)/vp_34(3), vp_34(3)/vp_34(3)];
+
+%vanishing line
+l_inf = cross(vp_12,vp_34);
+l_inf = l_inf/l_inf(3);
+
+% Affine rectification
+H_pa = [1,0,0;0,1,0;l_inf(1),l_inf(2),l_inf(3)];
+
+I_pa = apply_H(I, H_pa);
+
+[lr1, lr2, lr3, lr4, pp1, pp2, pp3, pp4, pp5, pp6, pp7, pp8] = rectifyLines(data, H_pa, i1, i2, i3, i4);
+
+% create representations of two orthogonal line pairs in original space
+n1 = lr3;
+m1 = lr1;
+
+A = cross(lr4,lr1);
+B = cross(lr3,lr2);
+C = cross(lr3,lr1);
+D = cross(lr4,lr2);
+
+n2 = cross(C,D);
+m2 = cross(A,B);
+
+figure;imshow(uint8(I_pa));
+title('Affine transformation with red orthogonal line pairs' )
+hold on;
+t=1:0.1:1000;
+% affinely transformed lines
+plot(t, -(lr1(1)*t + lr1(3)) / lr1(2), 'y');
+plot(t, -(lr2(1)*t + lr2(3)) / lr2(2), 'y');
+plot(t, -(lr3(1)*t + lr3(3)) / lr3(2), 'y');
+plot(t, -(lr4(1)*t + lr4(3)) / lr4(2), 'y');
+
+% orthogonal lines on affinely transformed 
+plot(t, -(n1(1)*t + n1(3)) / n1(2), 'r');
+plot(t, -(m1(1)*t + m1(3)) / m1(2), 'r');
+plot(t, -(n2(1)*t + n2(3)) / n2(2), 'r');
+plot(t, -(m2(1)*t + m2(3)) / m2(2), 'r');
+
+% normalize orthogonal lines so that they have 2 elements
+n1 = [n1(1)/n1(3), n1(2)/n1(3)];
+m1 = [m1(1)/m1(3), m1(2)/m1(3)];
+
+n2 = [n2(1)/n2(3), n2(2)/n2(3)];
+m2 = [m2(1)/m2(3), m2(2)/m2(3)];
+
+A = [(n1(1)*m1(1)), (n1(1)*m1(2) + n1(2)*m1(1)), (n1(2)*m1(2));
+     (n2(1)*m2(1)), (n2(1)*m2(2) + n2(2)*m2(1)), (n2(2)*m2(2)) ];
+ 
+s = null(A); % solve system of eqs As = 0
+
+S = [s(1), s(2); s(2), s(3)]; % create symmetric matrix S
+
+K = chol(S); % Cholesky decomposition to obtain a valid solution K
+
+A = K;
+
+H_sa = [K(1,1) K(1,2) 0; K(2,1) K(2,2) 0; 0, 0, 1]; % H matrix to recover metric properties
+
+H_sa = inv(H_sa);
+
+I_sa = apply_H(I_pa, H_sa);
+
+%compute metrically rectified lines
+[lrr1, lrr2, lrr3, lrr4] = rectifyLinesMetric(H_sa, pp1, pp2, pp3, pp4, pp5, pp6, pp7, pp8);
+
+figure;imshow(uint8(I_sa));
+title('Metric transformation with chosen orthogonal line pairs')
+hold on;
+t=1:0.1:1000;
+% metrically transformed lines
+plot(t, -(lrr1(1)*t + lrr1(3)) / lrr1(2), 'y');
+plot(t, -(lrr2(1)*t + lrr2(3)) / lrr2(2), 'y');
+plot(t, -(lrr3(1)*t + lrr3(3)) / lrr3(2), 'y');
+plot(t, -(lrr4(1)*t + lrr4(3)) / lrr4(2), 'y');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. OPTIONAL: Metric Rectification in a single step
 % Use 5 pairs of orthogonal lines (pages 55-57, Hartley-Zisserman book)
+
+I=imread('Data/0000_s.png'); % we have to be in the proper folder
+A = load('Data/0000_s_info_lines.txt');
 indices = [424,240,48,534,119;
            712,565,493,227,224];
            
 for i = 1:5
 
-idx = indices(1,i)
+idx = indices(1,i);
 p1 = [A(idx,1) A(idx,2) 1]';
 p2 = [A(idx,3) A(idx,4) 1]';
-idx = indices(2,i)
+idx = indices(2,i);
 p3 = [A(idx,1) A(idx,2) 1]';
 p4 = [A(idx,3) A(idx,4) 1]';
 l=cross(p1,p2);
