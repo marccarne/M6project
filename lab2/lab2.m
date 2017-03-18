@@ -68,7 +68,16 @@ plotmatches(imb, imc, points_b(1:2,:), points_c(1:2,:), matches_bc, 'Stacking', 
 th = 3;
 xab_a = [points_a(1:2, matches_ab(1,:)); ones(1, length(matches_ab))];
 xab_b = [points_b(1:2, matches_ab(2,:)); ones(1, length(matches_ab))];
+
+% % Points normalization
+% [xab_a Taba] = normalizepts( xab_a );
+% [xab_b Tabb] = normalizepts( xab_b );
+
 [Hab, inliers_ab] = ransac_homography_adaptive_loop(xab_a, xab_b, th, 1000); % ToDo: complete this function
+
+% % De normalization of points
+% xab_a = inv(Taba)* xab_a;
+% xab_b = inv(Tabb)* xab_b;
 
 figure(1);
 plotmatches(ima, imb, points_a(1:2,:), points_b(1:2,:), ...
@@ -80,7 +89,16 @@ vgg_gui_H(imargb, imbrgb, Hab);
 %% Compute homography (normalized DLT) between b and c, play with the homography
 xbc_b = [points_b(1:2, matches_bc(1,:)); ones(1, length(matches_bc))];
 xbc_c = [points_c(1:2, matches_bc(2,:)); ones(1, length(matches_bc))];
+
+% % Points normalization
+% [xbc_b Tbcb] = normalizepts( xbc_b );
+% [xbc_c Tbcc] = normalizepts( xbc_c );
+
 [Hbc, inliers_bc] = ransac_homography_adaptive_loop(xbc_b, xbc_c, th, 1000);  %Inverted if we take 'b' as the reference
+
+% % De normalization of points
+% xbc_b = inv(Tbcb)* xbc_b;
+% xbc_c = inv(Tbcc)* xbc_c;
 
 figure(2);
 plotmatches(imb, imc, points_b(1:2,:), points_c(1:2,:), ...
@@ -118,6 +136,7 @@ points_to_perform_xp = xab_b(:,inliers_ab);
 %Transform to non-homogeneous points
 x = euclid(points_to_perform_x);  %ToDo: set the non-homogeneous point coordinates of the 
 xp = euclid(points_to_perform_xp); %      point correspondences we will refine with the geometric method
+
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [ Hab(:) ; x(:) ];      % The parameters or independent variables
 
@@ -169,6 +188,7 @@ points_to_perform_xp = xbc_c(:,inliers_bc);
 %Transform to non-homogeneous points
 x = euclid(points_to_perform_x);  %ToDo: set the non-homogeneous point coordinates of the 
 xp = euclid(points_to_perform_xp); %      point correspondences we will refine with the geometric method
+
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [ Hbc(:) ; x(:) ];      % The parameters or independent variables
 
