@@ -15,6 +15,6 @@ xp_h = [xp ; ones(1,size(xp,2))];
 x_est = H\xp_h;
 xp_est = H*x_h;
 
-E = [x - x_est(1:2,:); xp - xp_est(1:2,:)]';
+E = [x - euclid(x_est) xp - euclid(xp_est)];
 
 end

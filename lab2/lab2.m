@@ -12,13 +12,13 @@ addpath('sift');
 % imbrgb = imread('Data/llanes/llanes_b.jpg');
 % imcrgb = imread('Data/llanes/llanes_c.jpg');
 
-imargb = imread('Data/castle_int/0016_s.png');
-imbrgb = imread('Data/castle_int/0015_s.png');
-imcrgb = imread('Data/castle_int/0014_s.png');
+% imargb = imread('Data/castle_int/0016_s.png');
+% imbrgb = imread('Data/castle_int/0015_s.png');
+% imcrgb = imread('Data/castle_int/0014_s.png');
 
-% imargb = imread('Data/aerial/site13/frame00000.png');
-% imbrgb = imread('Data/aerial/site13/frame00002.png');
-% imcrgb = imread('Data/aerial/site13/frame00003.png');
+imargb = imread('Data/aerial/site13/frame00000.png');
+imbrgb = imread('Data/aerial/site13/frame00002.png');
+imcrgb = imread('Data/aerial/site13/frame00003.png');
 % 
 ima = sum(double(imargb), 3) / 3 / 255;
 imb = sum(double(imbrgb), 3) / 3 / 255;
@@ -79,9 +79,9 @@ xab_b = [points_b(1:2, matches_ab(2,:)); ones(1, length(matches_ab))];
 % xab_a = inv(Taba)* xab_a;
 % xab_b = inv(Tabb)* xab_b;
 
-figure(1);
-plotmatches(ima, imb, points_a(1:2,:), points_b(1:2,:), ...
-    matches_ab(:,inliers_ab), 'Stacking', 'v');
+% figure(1);
+% plotmatches(ima, imb, points_a(1:2,:), points_b(1:2,:), ...
+%     matches_ab(:,inliers_ab), 'Stacking', 'v');
 
 vgg_gui_H(imargb, imbrgb, Hab);
 
@@ -100,9 +100,9 @@ xbc_c = [points_c(1:2, matches_bc(2,:)); ones(1, length(matches_bc))];
 % xbc_b = inv(Tbcb)* xbc_b;
 % xbc_c = inv(Tbcc)* xbc_c;
 
-figure(2);
-plotmatches(imb, imc, points_b(1:2,:), points_c(1:2,:), ...
-    matches_bc(:,inliers_bc), 'Stacking', 'v');
+% figure(2);
+% plotmatches(imb, imc, points_b(1:2,:), points_c(1:2,:), ...
+%     matches_bc(:,inliers_bc), 'Stacking', 'v');
 
 vgg_gui_H(imbrgb, imcrgb, Hbc);
 
@@ -114,9 +114,9 @@ iwb = apply_H_v2(imbrgb, eye(3) , corners);   % ToDo: complete the call to the f
 iwa = apply_H_v2(imargb, Hab, corners); %eye=identity matrix   % ToDo: complete the call to the function
 iwc = apply_H_v2(imcrgb, inv(Hbc), corners);    % ToDo: complete the call to the function
 
-figure;
-imshow(max(iwc, max(iwb, iwa)));%image(max(iwc, max(iwb, iwa)));axis off;
-title('Mosaic A-B-C');
+% figure;
+% imshow(max(iwc, max(iwb, iwa)));%image(max(iwc, max(iwb, iwa)));axis off;
+% title('Mosaic A-B-C');
 
 % ToDo: compute the mosaic with castle_int images
 % ToDo: compute the mosaic with aerial images set 13
@@ -136,6 +136,9 @@ points_to_perform_xp = xab_b(:,inliers_ab);
 %Transform to non-homogeneous points
 x = euclid(points_to_perform_x);  %ToDo: set the non-homogeneous point coordinates of the 
 xp = euclid(points_to_perform_xp); %      point correspondences we will refine with the geometric method
+
+% x = points_a(1:2, matches_ab(1,:));  %ToDo: set the non-homogeneous point coordinates of the 
+% xp = points_b(1:2, matches_ab(2,:)); %      point correspondences we will refine with the geometric method
 
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [ Hab(:) ; x(:) ];      % The parameters or independent variables
@@ -188,6 +191,9 @@ points_to_perform_xp = xbc_c(:,inliers_bc);
 %Transform to non-homogeneous points
 x = euclid(points_to_perform_x);  %ToDo: set the non-homogeneous point coordinates of the 
 xp = euclid(points_to_perform_xp); %      point correspondences we will refine with the geometric method
+
+% x = points_b(1:2, matches_bc(1,:));  %ToDo: set the non-homogeneous point coordinates of the 
+% xp = points_c(1:2, matches_bc(2,:)); %      point correspondences we will refine with the geometric method
 
 Xobs = [ x(:) ; xp(:) ];     % The column vector of observed values (x and x')
 P0 = [ Hbc(:) ; x(:) ];      % The parameters or independent variables
