@@ -16,38 +16,38 @@ addpath('sift');
 % imbrgb = imread('Data/castle_int/0015_s.png');
 % imcrgb = imread('Data/castle_int/0014_s.png');
 
-imargb = imread('Data/aerial/site13/frame00000.png');
-imbrgb = imread('Data/aerial/site13/frame00002.png');
-imcrgb = imread('Data/aerial/site13/frame00003.png');
-% 
-ima = sum(double(imargb), 3) / 3 / 255;
-imb = sum(double(imbrgb), 3) / 3 / 255;
-imc = sum(double(imcrgb), 3) / 3 / 255;
+% imargb = imread('Data/aerial/site13/frame00000.png');
+% imbrgb = imread('Data/aerial/site13/frame00002.png');
+% imcrgb = imread('Data/aerial/site13/frame00003.png');
+% % 
+% ima = sum(double(imargb), 3) / 3 / 255;
+% imb = sum(double(imbrgb), 3) / 3 / 255;
+% imc = sum(double(imcrgb), 3) / 3 / 255;
 
-% imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
-% imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
-% imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
-% ima = imargb;
-% imb = imbrgb;
-% imc = imcrgb;
+imargb = double(imread('Data/aerial/site22/frame_00001.tif'));
+imbrgb = double(imread('Data/aerial/site22/frame_00018.tif'));
+imcrgb = double(imread('Data/aerial/site22/frame_00030.tif'));
+ima = imargb;
+imb = imbrgb;
+imc = imcrgb;
 
 %% Compute SIFT keypoints
 [points_a, desc_a] = sift(ima, 'Threshold', 0.01);
 [points_b, desc_b] = sift(imb, 'Threshold', 0.01);
 [points_c, desc_c] = sift(imc, 'Threshold', 0.01);
 
-figure;
-imshow(imargb);%image(imargb)
-hold on;
-plot(points_a(1,:), points_a(2,:),'+y');
-figure;
-imshow(imbrgb);%image(imbrgb);
-hold on;
-plot(points_b(1,:), points_b(2,:),'+y');
-figure;
-imshow(imcrgb);%image(imcrgb);
-hold on;
-plot(points_c(1,:), points_c(2,:),'+y');
+% figure;
+% imshow(imargb);%image(imargb)
+% hold on;
+% plot(points_a(1,:), points_a(2,:),'+y');
+% figure;
+% imshow(imbrgb);%image(imbrgb);
+% hold on;
+% plot(points_b(1,:), points_b(2,:),'+y');
+% figure;
+% imshow(imcrgb);%image(imcrgb);
+% hold on;
+% plot(points_c(1,:), points_c(2,:),'+y');
 
 %% Match SIFT keypoints
 %b is the central image
