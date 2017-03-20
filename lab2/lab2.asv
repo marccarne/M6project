@@ -360,10 +360,9 @@ P = cell(N,1);
 figure;hold;
 for i = 1:N
     % ToDo: compute r1, r2, and t{i}
-    h = H{i}
-    r1 = inv(K) * h(:,1);
-    r2 = inv(K) * h(:,2);
-    t{i} = inv(K) * h(:,3);
+    r1 = ...
+    r2 = ...
+    t{i} = ...
     
     % Solve the scale ambiguity by forcing r1 and r2 to be unit vectors.
     s = sqrt(norm(r1) * norm(r2)) * sign(t{i}(3));
