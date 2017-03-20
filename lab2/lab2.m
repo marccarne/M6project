@@ -433,5 +433,20 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. OPTIONAL: Add a logo to an image using the DLT algorithm
 
+% Handcrafted points to place our logo in a single "cell" on the graffiti1
+% image. One of the cells of the wall, it's hard to see. 
 
+[logo,map,alpha] = imread('logo.png');
 
+pointsImage = [ 356 756 1; 358 871 1; 455 757 1; 459 873 1]';
+[rows,cols] = size(logo);
+pointsLogo = [0 0 1;0 cols 1;rows 0 1; rows cols 1]';
+
+H = homography2d(pointsLogo,pointsImage);
+
+pointsImage
+p = H * pointsLogo;
+p(1,:) = p(1,:)./p(3,:);
+p(2,:) = p(2,:)./p(3,:);
+p(3,:) = p(3,:)./p(3,:);
+p

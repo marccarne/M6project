@@ -16,7 +16,7 @@ function H = homography2d(x1,x2)
     A=zeros(8,9); %'A' matrix to compute the homography
     
     Ai=zeros(2,9); %Matrix for a pair of points
-    for ii=1:s(2) %Number of rows in the points matrix, for each pair of points
+    for ii=1:s(2) %Number of cols in the points matrix, for each pair of points
         %x'--> in the b reference
         x1_x=x2(1,ii);
         x1_y=x2(2,ii);
@@ -37,8 +37,8 @@ function H = homography2d(x1,x2)
     [U,D,V]=svd(A);
     
     %'h', the flat H (homography) is the last column of V
-    size_V=size(V);
-    h=V(:,size_V(2));
     
-    H=vec2mat(h,3); %Create the 3x3 matrix, 'h' have 9 positions (coefficients)
+    h=V(:,end);
+    
+    H=vec2mat(h,3); %Create the 3x3 matrix, 'h' has 9 positions (coefficients)
 end

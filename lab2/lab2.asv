@@ -255,16 +255,18 @@ T     = imread('Data/calib/template.jpg');
 I{1}  = imread('Data/calib/graffiti1.tif');
 I{2}  = imread('Data/calib/graffiti2.tif');
 I{3}  = imread('Data/calib/graffiti3.tif');
-%I{4}  = imread('Data/calib/graffiti4.tif');
-%I{5}  = imread('Data/calib/graffiti5.tif');
+I{4}  = imread('Data/calib/graffiti4.tif');
+I{5}  = imread('Data/calib/graffiti5.tif');
 Tg = sum(double(T), 3) / 3 / 255;
 Ig{1} = sum(double(I{1}), 3) / 3 / 255;
 Ig{2} = sum(double(I{2}), 3) / 3 / 255;
 Ig{3} = sum(double(I{3}), 3) / 3 / 255;
+Ig{4} = sum(double(I{4}), 3) / 3 / 255;
+Ig{5} = sum(double(I{5}), 3) / 3 / 255;
 
 N = length(I);
 
-%% Compute keypoints.
+    %% Compute keypoints.
 fprintf('Computing sift points in template... ');
 [pointsT, descrT] = sift(Tg, 'Threshold', 0.05);
 fprintf(' done\n');
@@ -289,7 +291,7 @@ for i = 1:N
     x1 = pointsT(1:2, matches(1, :));
     x2 = points{i}(1:2, matches(2, :));
     H{i} = 0;
-    [H{i}, inliers] =  ransac_homography_adaptive_loop(homog(x1), homog(x2), 3, 1000);
+    [H{i}, inliers] =  ransac_homography_adaptive_loop(homogeneous(x1), homogeneous(x2), 3, 1000);
 
     % Plot inliers.
     figure;
@@ -301,22 +303,22 @@ end
 
 %% Compute the Image of the Absolute Conic
 
-%% We compute the matrix V from the homographies:
+% We compute the matrix V from the homographies:
 
 for n = 1:N
-    %% Get the corresponding homography
+    % Get the corresponding homography
     h = H{n};
-    %% Store the columns here for convenience
+    % Store the columns here for convenience
     h1 = h(:,1);
     h2 = h(:,2);
-    %% First equation of the two provided by a planar pattern: V12_t*Omega = 0
+    % First equation of the two provided by a planar pattern: V12_t*Omega = 0
     C((2*n-1),:) = [h1(1) * h2(1),
                     h1(1) * h2(2) + h1(2) * h2(1),
                     h1(1) * h2(3) + h1(3) * h2(1),
                     h1(2) * h2(2),
                     h1(2) * h2(3) + h1(3) * h2(2),
                     h1(3) * h2(3)];
-    %% Second equation. (V11-V22)_t * Omega = 0
+    % Second equation. (V11-V22)_t * Omega = 0
     v11 = [h1(1) * h1(1),
            h1(1) * h1(2) + h1(2) * h1(1),
            h1(1) * h1(3) + h1(3) * h1(1),
@@ -334,19 +336,17 @@ for n = 1:N
 end
 
 %% SVD decomposition. w is the last columnv of V transposed
-[U S V] = svd(C);
+[U D V] = svd(C);
 
-W = V(:,3);
+W = V(:,end);
 
 w = [W(1), W(2), W(3);
      W(2), W(4), W(5);
      W(3), W(5), W(6)];
  
 %% Recover the camera calibration.
-
-
-%% Apply cholesky factorization of w:
-%% w = inv(K_t * K) --> then: inv(w) = (K_t * K)
+% Apply cholesky factorization of w:
+% w = inv(K_t * K) --> then: inv(w) = (K_t * K)
 
 K = chol(inv(w));
     
@@ -360,9 +360,10 @@ P = cell(N,1);
 figure;hold;
 for i = 1:N
     % ToDo: compute r1, r2, and t{i}
-    r1 = ...
-    r2 = ...
-    t{i} = ...
+    h = H{i};
+    r1 = inv(K) * h(:,1);% / norm(inv(K) * h(:,1));
+    r2 = inv(K) * h(:,2);%/ norm(inv(K) * h(:,2));
+    t{i} = inv(K) * h(:,3);%/ norm(inv(K) * h(:,1));
     
     % Solve the scale ambiguity by forcing r1 and r2 to be unit vectors.
     s = sqrt(norm(r1) * norm(r2)) * sign(t{i}(3));
@@ -378,7 +379,7 @@ for i = 1:N
     P{i} = K * [R{i} t{i}];
     plot_camera(P{i}, 800, 600, 200);
 end
-
+%%
 % ToDo: in the report explain how the optical center is computed in the
 %       provided code
 
@@ -400,21 +401,31 @@ plot_camera(K * eye(3,4), 800, 600, 200);
 % ToDo: complete the call to the following function with the proper
 %       coordinates of the image corners in the new reference system
 for i = 1:N
-    vgg_scatter_plot( [...   ...   ...   ...   ...], 'r');
+    p1 = [R{i} t{i}] * homogeneous([0 0 0]');
+    p2 = [R{i} t{i}] * homogeneous([nx 0 0]');
+    p3 = [R{i} t{i}] * homogeneous([nx ny 0]');
+    p4 = [R{i} t{i}] * homogeneous([0 ny 0]');
+    vgg_scatter_plot( [p1 p2 p3 p4 p1], 'r');
 end
 
 %% Augmented reality: Plot some 3D points on every camera.
 [Th, Tw] = size(Tg);
 cube = [0 0 0; 1 0 0; 1 0 0; 1 1 0; 1 1 0; 0 1 0; 0 1 0; 0 0 0; 0 0 1; 1 0 1; 1 0 1; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 0 1; 0 0 0; 1 0 0; 1 0 0; 1 0 1; 1 0 1; 0 0 1; 0 0 1; 0 0 0; 0 1 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 0 1 1; 0 1 1; 0 1 0; 0 0 0; 0 1 0; 0 1 0; 0 1 1; 0 1 1; 0 0 1; 0 0 1; 0 0 0; 1 0 0; 1 1 0; 1 1 0; 1 1 1; 1 1 1; 1 0 1; 1 0 1; 1 0 0 ]';
+%pyramid = [0 0 0; 1 0 0; cos(60*pi/180) sin(60*pi/180) 0; 0 0 0; cos(45*pi/180)/3 sin(45*pi/180)/3 1; (1 + cos(45*pi/180))/3 sin(45*pi/180)/3 1; 1 0 0; (1 + cos(45*pi/180))/3 sin(45*pi/180)/3 1;(cos(60*pi/180) + cos(45*pi/180))/3 (sin(60*pi/180) + sin(45*pi/180))/3 1;cos(60*pi/180) sin(60*pi/180)  0; (cos(60*pi/180) + cos(45*pi/180))/3 (sin(60*pi/180) + sin(45*pi/180))/3 1;cos(45*pi/180)/3 sin(45*pi/180)/3 1]';
+
+% Our simple object, a very original pyramid
+pyramid = [0 0 0; 1 0 0; 0.5 1 0; 0 0 0; 0.5 0.5 1;1 0 0; 0.5 0.5 1; 0.5 1 0]';
 
 X = (cube - .5) * Tw / 4 + repmat([Tw / 2; Th / 2; -Tw / 8], 1, length(cube));
-
+Y = (pyramid - .5) * Tw / 4 + repmat([Tw / 2; Th / 2; -Tw / 8], 1, length(pyramid));
 for i = 1:N
     figure; colormap(gray);
     imagesc(Ig{i});
     hold on;
-    x = euclid(P{i} * homog(X));
-    vgg_scatter_plot(x, 'g');
+    x = euclid(P{i} * homogeneous(X));
+    y = euclid(P{i} * homogeneous(Y));
+    %vgg_scatter_plot(x, 'g');
+    vgg_scatter_plot(y, 'r');
 end
 
 % ToDo: change the virtual object, use another 3D simple geometric object like a pyramid
@@ -422,5 +433,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. OPTIONAL: Add a logo to an image using the DLT algorithm
 
+% Handcrafted points to place our logo in a single "cell" on the graffiti1
+% image. One of the cells of the wall, it's hard to see. 
 
+[logo,map,alpha] = imread('logo.png');
+
+pointsImage = [ 756 356 1; 871 358 1; 757 455 1; 873 459 1]';
+[rows,cols] = size(logo);
+pointsLogo = [0 0 1;cols 0 1;0 rows 1; cols rows 1]';
+
+H = homography2d(pointsLogo,pointsImage);
 
