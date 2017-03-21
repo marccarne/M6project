@@ -11,6 +11,7 @@ function H = homography2d(x1,x2)
     %x' points are the points we want to move, so from an image to the
     %reference (central image). x2 will be the central image
     
+    % x2 = H * x1;
     s=size(x1);
     
     A=zeros(8,9); %'A' matrix to compute the homography

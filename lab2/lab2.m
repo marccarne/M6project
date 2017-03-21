@@ -424,8 +424,8 @@ for i = 1:N
     hold on;
     x = euclid(P{i} * homogeneous(X));
     y = euclid(P{i} * homogeneous(Y));
-    %vgg_scatter_plot(x, 'g');
-    vgg_scatter_plot(y, 'r');
+    vgg_scatter_plot(x, 'g');
+    %vgg_scatter_plot(y, 'r');
 end
 
 % ToDo: change the virtual object, use another 3D simple geometric object like a pyramid
@@ -435,18 +435,37 @@ end
 
 % Handcrafted points to place our logo in a single "cell" on the graffiti1
 % image. One of the cells of the wall, it's hard to see. 
-
+ImageToPaint = imread('Data/calib/graffiti1.tif');
 [logo,map,alpha] = imread('logo.png');
+logo = imresize(logo,0.5);
+alpha = imresize(alpha,0.5);
 
-pointsImage = [ 356 756 1; 358 871 1; 455 757 1; 459 873 1]';
-[rows,cols] = size(logo);
+% Defined selecting a square on the image, clockwise, starting on the top
+% left corner
+
+pointsImage = [ 358 756 1; 367 1111 1; 643 746 1; 657 1094 1]';
+[rows,cols,~] = size(logo);
 pointsLogo = [0 0 1;0 cols 1;rows 0 1; rows cols 1]';
 
 H = homography2d(pointsLogo,pointsImage);
 
-pointsImage
-p = H * pointsLogo;
-p(1,:) = p(1,:)./p(3,:);
-p(2,:) = p(2,:)./p(3,:);
-p(3,:) = p(3,:)./p(3,:);
-p
+% Paint our logo:
+transformedLogo = apply_H2(logo,H);
+transformedAlpha = apply_H2(alpha,H);
+
+origin = pointsImage(1:2,1);
+[rows,cols,~] = size(transformedLogo);
+
+for row = 1:rows
+    for col = 1:cols
+        if (transformedAlpha(row,col,1) ~= 0)
+            ImageToPaint(origin(1) + row, origin(2) + col,:) = transformedLogo(row,col,:);
+        end
+    end
+end
+
+figure();imagesc(ImageToPaint);
+hold on;
+ImageSquare = [pointsImage(1:2,1:2),pointsImage(1:2,4),pointsImage(1:2,3), pointsImage(1:2,1)];
+plot(ImageSquare(2,:),ImageSquare(1,:),'g');
+
