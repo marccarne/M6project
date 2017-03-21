@@ -428,10 +428,11 @@ for i = 1:N
     %vgg_scatter_plot(y, 'r');
 end
 
-% ToDo: change the virtual object, use another 3D simple geometric object like a pyramid
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. OPTIONAL: Add a logo to an image using the DLT algorithm
+
+% For the apply_H from last week
+addpath('../lab1');
 
 % Handcrafted points to place our logo in a single "cell" on the graffiti1
 % image. One of the cells of the wall, it's hard to see. 
@@ -442,8 +443,9 @@ alpha = imresize(alpha,0.5);
 
 % Defined selecting a square on the image, clockwise, starting on the top
 % left corner
-
 pointsImage = [ 358 756 1; 367 1111 1; 643 746 1; 657 1094 1]';
+
+
 [rows,cols,~] = size(logo);
 pointsLogo = [0 0 1;0 cols 1;rows 0 1; rows cols 1]';
 
