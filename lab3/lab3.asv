@@ -27,19 +27,18 @@ T = [     0, -t(3), -t(2);
        t(3),     0, -t(1);
       -t(2),  t(1),     0];
 K1 = eye(3);
-K2 = eye(3);
+K2 = 
   
 % As P1 is the identity, the translation t and rotation R between both are
 % the ones at P2
 
 
-F_gt = inv(K2') * T * R * inv(K1); 
+F_gt = T * R;
 
 % Evaluation: these two matrices should be very similar
 F_gt / norm(F_gt)
 F_es / norm(F_es)
 
-sum(sum(abs(F_gt / norm(F_gt) - F_es / norm(F_es))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Robustly fit fundamental matrix
