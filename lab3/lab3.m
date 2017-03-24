@@ -161,21 +161,41 @@ subplot(2,2,4); imshow(im4rgb); axis image; title('Image 4');
 [points_3, desc_3] = sift(im3, 'Threshold', 0.015);
 [points_4, desc_4] = sift(im4, 'Threshold', 0.015);
 
-%% ToDo:
 
 % Take image im1 as reference image (image 1) and compute the fundamental 
 % matrices needed for computing the trajectory of point idx_car_I1
 % (use the SIFT keypoints previously computed)
 
+% points_2 = F21 * points_1
+matches = siftmatch(desc_1, desc_2);
+figure;
+plotmatches(im1, im2, points_1(1:2,:), points_2(1:2,:), matches, 'Stacking', 'v');
+p12 = [points_1(1:2, matches(1,:)); ones(1, length(matches))];
+p2 = [points_2(1:2, matches(2,:)); ones(1, length(matches))];
+[F21, inliers] = ransac_fundamental_matrix(p12, p2, 2.0,100); 
+
+% points_3 = F21 * points_1
+matches = siftmatch(desc_1, desc_3);
+figure;
+plotmatches(im1, im3, points_1(1:2,:), points_2(1:2,:), matches, 'Stacking', 'v');
+p13 = [points_1(1:2, matches(1,:)); ones(1, length(matches))];
+p3 = [points_3(1:2, matches(2,:)); ones(1, length(matches))];
+[F31, inliers] = ransac_fundamental_matrix(p13, p3, 2.0,100); 
+
+% points_4 = F21 * points_1
+matches = siftmatch(desc_1, desc_4);
+figure;
+plotmatches(im1, im4, points_1(1:2,:), points_2(1:2,:), matches, 'Stacking', 'v');
+p14 = [points_1(1:2, matches(1,:)); ones(1, length(matches))];
+p4 = [points_4(1:2, matches(2,:)); ones(1, length(matches))];
+[F41, inliers] = ransac_fundamental_matrix(p14, p4, 2.0,100); 
 
 %% Plot the car trajectory (keypoint idx_car_I1 in image 1)
 
-% ToDo: complete the code
-
 idx_car_I1 = 1197;
-idx_car_I2 = % ToDo: identify the corresponding point of idx_car_I1 in image 2
-idx_car_I3 = % ToDo: identify the corresponding point of idx_car_I1 in image 3
-idx_car_I4 = % ToDo: identify the corresponding point of idx_car_I1 in image 4
+[~,idx_car_I2] = min(dot(repmat(F21 * p12(:,idx_car_I1),1,size(p2,2)),p2))
+[~,idx_car_I3] = min(dot(repmat(F31 * p13(:,idx_car_I1),1,size(p3,2)),p3))
+[~,idx_car_I4] = min(dot(repmat(F41 * p13(:,idx_car_I1),1,size(p4,2)),p4))
 
 % coordinates (in image 1) of the keypoint idx_car_I1 (point in a van). 
 % point1_1 is the projection of a 3D point in the 3D trajectory of the van
