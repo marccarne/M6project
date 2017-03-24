@@ -1,6 +1,6 @@
 function [ F ] = fundamental_matrix(p1,p2)
 
-%% Normalization of x1
+%% Normalization of p1 and p2
 n = size(p1,2);
 p1 = p1 ./ [p1(3,:);p1(3,:);p1(3,:)];
 p2 = p2 ./ [p2(3,:);p2(3,:);p2(3,:)];

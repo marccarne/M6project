@@ -36,10 +36,12 @@ K2 = eye(3);
 F_gt = inv(K2') * T * R * inv(K1); 
 
 % Evaluation: these two matrices should be very similar
-F_gt / norm(F_gt)
-F_es / norm(F_es)
 
-sum(sum(abs(F_gt / norm(F_gt) - F_es / norm(F_es))))
+Fundamental_Matrix_gt = F_gt / norm(F_gt)
+Fundamental_Matrix_es = F_es / norm(F_es)
+
+clear Fundamental_Matrix_gt,Fundamental_Matrix_es;
+disp (['Fundamental matrices have a square difference of ', num2str(sum(sum(abs(F_gt / norm(F_gt) - F_es / norm(F_es))))) ]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2. Robustly fit fundamental matrix
@@ -72,8 +74,8 @@ plotmatches(im1, im2, points_1(1:2,:), points_2(1:2,:), matches, 'Stacking', 'v'
 p1 = [points_1(1:2, matches(1,:)); ones(1, length(matches))];
 p2 = [points_2(1:2, matches(2,:)); ones(1, length(matches))];
 
-% ToDo: create this function (you can use as a basis 'ransac_homography_adaptive_loop.m')
-[F, inliers] = ransac_fundamental_matrix(p1, p2, 2.0); 
+%%
+[F, inliers] = ransac_fundamental_matrix(p1, p2, 2.0,100); 
 
 % show inliers
 figure;
@@ -85,8 +87,8 @@ vgg_gui_F(im1rgb, im2rgb, F');
 
 %% Plot some epipolar lines
 
-l2 = ... % epipolar lines in image 2 % ToDo
-l1 = ... % epipolar lines in image 1 % ToDo
+l2 = F * p1; % epipolar lines in image 2 % ToDo
+l1 = F' * p2;% epipolar lines in image 1 % ToDo
 
 % choose three random indices
 m1 = inliers(10);
