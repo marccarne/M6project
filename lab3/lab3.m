@@ -87,8 +87,8 @@ vgg_gui_F(im1rgb, im2rgb, F');
 
 %% Plot some epipolar lines
 
-l2 = F * p1; % epipolar lines in image 2 % ToDo
-l1 = F' * p2;% epipolar lines in image 1 % ToDo
+l2 = F * p1; % epipolar lines in image 2 
+l1 = F' * p2;% epipolar lines in image 1 
 
 % choose three random indices
 m1 = inliers(10);
@@ -162,7 +162,7 @@ subplot(2,2,4); imshow(im4rgb); axis image; title('Image 4');
 [points_4, desc_4] = sift(im4, 'Threshold', 0.015);
 
 
-% Take image im1 as reference image (image 1) and compute the fundamental 
+%% Take image im1 as reference image (image 1) and compute the fundamental 
 % matrices needed for computing the trajectory of point idx_car_I1
 % (use the SIFT keypoints previously computed)
 
@@ -174,18 +174,18 @@ p12 = [points_1(1:2, matches(1,:)); ones(1, length(matches))];
 p2 = [points_2(1:2, matches(2,:)); ones(1, length(matches))];
 [F21, inliers] = ransac_fundamental_matrix(p12, p2, 2.0,100); 
 
-% points_3 = F21 * points_1
+%% points_3 = F31 * points_1
 matches = siftmatch(desc_1, desc_3);
 figure;
-plotmatches(im1, im3, points_1(1:2,:), points_2(1:2,:), matches, 'Stacking', 'v');
+plotmatches(im1, im3, points_1(1:2,:), points_3(1:2,:), matches, 'Stacking', 'v');
 p13 = [points_1(1:2, matches(1,:)); ones(1, length(matches))];
 p3 = [points_3(1:2, matches(2,:)); ones(1, length(matches))];
 [F31, inliers] = ransac_fundamental_matrix(p13, p3, 2.0,100); 
 
-% points_4 = F21 * points_1
+%% points_4 = F41 * points_1
 matches = siftmatch(desc_1, desc_4);
 figure;
-plotmatches(im1, im4, points_1(1:2,:), points_2(1:2,:), matches, 'Stacking', 'v');
+plotmatches(im1, im4, points_1(1:2,:), points_4(1:2,:), matches, 'Stacking', 'v');
 p14 = [points_1(1:2, matches(1,:)); ones(1, length(matches))];
 p4 = [points_4(1:2, matches(2,:)); ones(1, length(matches))];
 [F41, inliers] = ransac_fundamental_matrix(p14, p4, 2.0,100); 
@@ -193,11 +193,26 @@ p4 = [points_4(1:2, matches(2,:)); ones(1, length(matches))];
 %% Plot the car trajectory (keypoint idx_car_I1 in image 1)
 
 idx_car_I1 = 1197;
-[~,idx_car_I2] = min(dot(repmat(F21 * p12(:,idx_car_I1),1,size(p2,2)),p2))
-[~,idx_car_I3] = min(dot(repmat(F31 * p13(:,idx_car_I1),1,size(p3,2)),p3))
-[~,idx_car_I4] = min(dot(repmat(F41 * p13(:,idx_car_I1),1,size(p4,2)),p4))
 
-% coordinates (in image 1) of the keypoint idx_car_I1 (point in a van). 
+%% Match with image 2
+epipolarLineInImage2 = F21 * [points_1(1:2,idx_car_I1);1];
+epipolarLinesInImage2 = repmat(epipolarLineInImage2,1,size(points_2,2));
+[~,idx_car_I2] = min(dot(epipolarLinesInImage2,[points_2(1:2,:); ones(1, size(points_2,2))]));
+plotmatches(im1, im2, points_1(1:2,idx_car_I1), points_2(1:2,idx_car_I2), [1;1], 'Stacking', 'v');
+
+%% Match with image 3
+epipolarLineInImage3 = F31 * [points_1(1:2,idx_car_I1);1];
+epipolarLinesInImage3 = repmat(epipolarLineInImage3,1,size(points_3,2));
+[~,idx_car_I3] = min(dot(epipolarLinesInImage3,[points_3(1:2,:); ones(1, size(points_3,2))]));
+plotmatches(im1, im3, points_1(1:2,idx_car_I1), points_3(1:2,idx_car_I3), [1;1], 'Stacking', 'v');
+
+%% Match with image 4
+epipolarLineInImage4 = F41 * [points_1(1:2,idx_car_I1);1];
+epipolarLinesInImage4 = repmat(epipolarLineInImage4,1,size(points_4,2));
+[~,idx_car_I4] = min(dot(epipolarLinesInImage4,[points_4(1:2,:); ones(1, size(points_4,2))]));
+plotmatches(im1, im3, points_1(1:2,idx_car_I1), points_4(1:2,idx_car_I3), [1;1], 'Stacking', 'v');
+
+%% coordinates (in image 1) of the keypoint idx_car_I1 (point in a van). 
 % point1_1 is the projection of a 3D point in the 3D trajectory of the van
 point1_1 = [points_1(1:2,idx_car_I1)' 1]';
 % coordinates (in image 1) of another 3D point in the same 3D trajectory of
