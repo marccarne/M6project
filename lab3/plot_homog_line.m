@@ -1,6 +1,6 @@
 % Plot the homogeneous line l (3 dimensional array) in yellow
 
-function plot_homog_line(l)
+function [P1,P2] = plot_homog_line(l)
 
 if(abs(l(1)) > abs(l(2))) % line is more vertical
     ylim = get(get(gcf,'CurrentAxes'), 'Ylim');

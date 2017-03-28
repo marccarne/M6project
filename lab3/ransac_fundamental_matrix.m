@@ -29,7 +29,7 @@ while it < max_it
     
     it = it + 1;
 end
-
+disp(['It took ', num2str(it), ' iterations']);
 % compute H from all the inliers
 F = fundamental_matrix(p1(:,best_inliers), p2(:,best_inliers));
 
