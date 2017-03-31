@@ -2,7 +2,8 @@
 %% Lab 4: Reconstruction from two views (knowing internal camera parameters) 
 % (optional: depth computation)
 
-addpath('sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
+addpath('../lab2/sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
+addpath('../lab3'); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 1. Triangulation
@@ -63,6 +64,7 @@ matches = siftmatch(descr{1}, descr{2});
 % Plot matches.
 figure();
 plotmatches(I{1}, I{2}, points{1}, points{2}, matches, 'Stacking', 'v');
+%plotColorMatches(I{1}, I{2}, points{1}, points{2});
 
 
 %% Fit Fundamental matrix and remove outliers.
@@ -93,20 +95,39 @@ K = H * K;
 
 
 % ToDo: Compute the Essential matrix from the Fundamental matrix
-E = ...
+E = K'*F*K;
 
 
 % ToDo: write the camera projection matrix for the first camera
-P1 = ...
+P1 = [eye(3), zeros(3,1)];
 
 % ToDo: write the four possible matrices for the second camera
-Pc2 = {};
-Pc2{1} = ...
-Pc2{2} = ...
-Pc2{3} = ...
-Pc2{4} = ...
 
-% HINT: You may get improper rotations; in that case you need to change
+W = [ 0, -1, 0;
+      1,  0, 0;
+      0,  0, 1];
+[U,D,V] = svd(E);
+
+vt = V';
+
+R1 = U*W*V;
+if(det(R1) < 0)
+    R1 = -R1;
+end
+R2 = U*W'*V;
+if(det(R2) < 0)
+    R2 = -R2;
+end
+
+t = U(:,end);
+
+Pc2 = {};
+Pc2{1} = [R1,t];
+Pc2{2} = [R1,-t];
+Pc2{3} = [R2,t];
+Pc2{4} = [R2,-t];
+
+%% HINT: You may get improper rotations; in that case you need to change
 %       their sign.
 % Let R be a rotation matrix, you may check:
 % if det(R) < 0
@@ -115,16 +136,24 @@ Pc2{4} = ...
 
 % plot the first camera and the four possible solutions for the second
 figure;
-plot_camera(P1,w,h);
-plot_camera(Pc2{1},w,h);
-plot_camera(Pc2{2},w,h);
-plot_camera(Pc2{3},w,h);
-plot_camera(Pc2{4},w,h);
+plot_camera(P1,w,h,'b');
+plot_camera(Pc2{1},w,h,'r');
+plot_camera(Pc2{2},w,h,'y');
+plot_camera(Pc2{3},w,h,'g');
+plot_camera(Pc2{4},w,h,'g');
 
+%% Cheiralty check:
+
+candidate1 = triangulate(x1(:,1),x2(:,1),P1,Pc2{1},[h,w]);
+candidate2 = triangulate(x1(:,1),x2(:,1),P1,Pc2{2},[h,w]);
+candidate3 = triangulate(x1(:,1),x2(:,1),P1,Pc2{3},[h,w]);
+candidate4 = triangulate(x1(:,1),x2(:,1),P1,Pc2{4},[h,w]);
 
 %% Reconstruct structure
 % ToDo: Choose a second camera candidate by triangulating a match.
-P2 = ...
+
+
+P2 = triangulate(x1_test(:,i), x2_test(:,i), P1, P2, [2 2]);
 
 % Triangulate all matches.
 N = size(x1,2);
