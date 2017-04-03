@@ -64,8 +64,6 @@ matches = siftmatch(descr{1}, descr{2});
 % Plot matches.
 figure();
 plotmatches(I{1}, I{2}, points{1}, points{2}, matches, 'Stacking', 'v');
-%plotColorMatches(I{1}, I{2}, points{1}, points{2});
-
 
 %% Fit Fundamental matrix and remove outliers.
 x1 = points{1}(:, matches(1, :));
@@ -82,9 +80,6 @@ x2 = points{2}(:, inlier_matches(2, :));
 
 % vgg_gui_F(Irgb{1}, Irgb{2}, F');
 
-
-
-
 %% Compute candidate camera matrices.
 
 % Camera calibration matrix
@@ -93,28 +88,25 @@ scale = 0.3;
 H = [scale 0 0; 0 scale 0; 0 0 1];
 K = H * K;
 
-
 % ToDo: Compute the Essential matrix from the Fundamental matrix
 E = K'*F*K;
 
-
-% ToDo: write the camera projection matrix for the first camera
-P1 = [eye(3), zeros(3,1)];
-
-% ToDo: write the four possible matrices for the second camera
-
+[U,D,V] = svd(E);
 W = [ 0, -1, 0;
       1,  0, 0;
       0,  0, 1];
-[U,D,V] = svd(E);
+t = U(:,end);
 
-vt = V';
+% ToDo: write the camera projection matrix for the first camera
+P1 = K*[eye(3), zeros(3,1)];
 
-R1 = U*W*V;
+% ToDo: write the four possible matrices for the second camera
+
+R1 = U*W*V';
 if(det(R1) < 0)
     R1 = -R1;
 end
-R2 = U*W'*V;
+R2 = U*W'*V';
 if(det(R2) < 0)
     R2 = -R2;
 end
@@ -122,10 +114,11 @@ end
 t = U(:,end);
 
 Pc2 = {};
-Pc2{1} = [R1,t];
-Pc2{2} = [R1,-t];
-Pc2{3} = [R2,t];
-Pc2{4} = [R2,-t];
+
+Pc2{1} = K*[R1 t];
+Pc2{2} = K*[R1 -t];
+Pc2{3} = K*[R2 t];
+Pc2{4} = K*[R2 -t];
 
 %% HINT: You may get improper rotations; in that case you need to change
 %       their sign.
@@ -136,25 +129,41 @@ Pc2{4} = [R2,-t];
 
 % plot the first camera and the four possible solutions for the second
 figure;
-plot_camera(P1,w,h,'b');
-plot_camera(Pc2{1},w,h,'r');
-plot_camera(Pc2{2},w,h,'y');
-plot_camera(Pc2{3},w,h,'g');
-plot_camera(Pc2{4},w,h,'g');
+plot_camera(P1,w,h,'b',2);
+plot_camera(Pc2{1},w,h,'r',2); % wrong matrix
+plot_camera(Pc2{2},w,h,'g',2); % wrong matrix
+plot_camera(Pc2{3},w,h,'y',2); % OK
+plot_camera(Pc2{4},w,h,'c',2); % OK
 
 %% Cheiralty check:
 
-candidate1 = triangulate(x1(:,1),x2(:,1),P1,Pc2{1},[h,w]);
-candidate2 = triangulate(x1(:,1),x2(:,1),P1,Pc2{2},[h,w]);
-candidate3 = triangulate(x1(:,1),x2(:,1),P1,Pc2{3},[h,w]);
-candidate4 = triangulate(x1(:,1),x2(:,1),P1,Pc2{4},[h,w]);
+randIndex = randi(size(x1,2));
+
+x1_match = homog(x1(:,randIndex));
+x2_match = homog(x2(:,randIndex));
+min_error = 10;
+%%
+for p =1:4
+    X_trian = triangulate(x1_match(1:2,:), x2_match(1:2,:), P1, Pc2{p}, [2 2]);
+    X_ri1 = euclid(P1 * X_trian);
+    X_ri2 = euclid(Pc2{p} * X_trian);
+    
+    errors_i1 = pdist([euclid(x1_match)' ; X_ri1']);
+    errors_i2 = pdist([euclid(x2_match)' ; X_ri2']); 
+    errors = [errors_i1 errors_i2];
+
+    if mean(abs(errors(:))) < min_error
+        min_error =  mean(abs(errors(:)));
+        P_index = p;
+    end
+end
 
 %% Reconstruct structure
 % ToDo: Choose a second camera candidate by triangulating a match.
 
 
 %P2 = triangulate(x1_test(:,i), x2_test(:,i), P1, P2, [2 2]);
-P2 = Pc2{4};
+P2 = Pc2{P_index};
 
 % Triangulate all matches.
 N = size(x1,2);
