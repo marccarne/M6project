@@ -30,14 +30,14 @@ for i = w1 + 1 : size(l_img,1)- w2
         test_val_i = (size(l_img,1) -w2 -max_disp); 
         test_val_j = (size(l_img,2) -w2 -max_disp);
         
-        if ((i > w1) && (i <= test_val_i) && (j > w1) && (j <= test_val_j))
+        if ((i > w1 + max_disp) && (i <= test_val_i) && (j > w1 + max_disp) && (j <= test_val_j))
             score_old = inf;
             score = 0;
             for dj = min_disp: max_disp
                 Iright = r_img( i -w1  :i +w2  , j -w1 +dj :j +w2 +dj);
                 if match_cost == 'ssd'    
                     score = ssd(Ileft,Iright);
-                    if (score <= score_old)
+                    if (score < score_old)
                         score_ssd = dj;
                     end    
                 else
@@ -45,9 +45,8 @@ for i = w1 + 1 : size(l_img,1)- w2
                 end
                 score_old = score; 
             end
-            disparity (i,j)= score_ssd;
+            disparity (i,j)= score;
         end
     end
 end
-%disparity = disparity/ max(max(disparity));
 end

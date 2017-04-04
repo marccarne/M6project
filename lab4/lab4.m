@@ -231,8 +231,9 @@ r_img = rgb2gray(imread('Data/scene1.row3.col4.ppm'));
 disp_gt = imread('Data/truedisp.row3.col3.pgm');
 figure(1)
 imshow(disp_gt);
-
-disparity = stereo_computation(l_img, r_img, 0, 16, 3, 'ssd');
+tic
+disparity = stereo_computation(l_img, r_img, 0, 16, 7, 'ssd');
+toc
 figure(2)
 imshow(mat2gray(disparity));
 

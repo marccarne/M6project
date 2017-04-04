@@ -231,13 +231,11 @@ r_img = rgb2gray(imread('Data/scene1.row3.col4.ppm'));
 disp_gt = imread('Data/truedisp.row3.col3.pgm');
 figure(1)
 imshow(disp_gt);
-
-disparity = stereo_computation(l_img, r_img, 0, 16, 3, 'ssd');
-disparityMap = disparity(rgb2gray(I1),rgb2gray(I2),'BlockSize',...
-    3,'DisparityRange',[0 16]);
+%%
+disparity = stereo_computation(l_img, r_img, 0, 16, 5, 'ssd');
 figure(2)
-% imshow(mat2gray(disparity));
-imshow(disparityMap,disparityRange);
+imshow(mat2gray(disparity));
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 4. OPTIONAL: Depth map computation with local methods (NCC)
 

@@ -13,9 +13,9 @@ kernel = ones(wsize);
 % in case we use ncc 
 if strcmp(cost, 'ncc')
     left = conv2(left_im,kernel,'same');
-    sigmaLeft = sqrt(conv2((double(left_im) - left).^2,kernel,'same'));
+    sigmaLeft = sqrt(conv2((left_im - left).^2,kernel,'same'));
     right = conv2(right_im,kernel,'same');
-    sigmaRight = sqrt(conv2((double(right_im) - right).^2,kernel,'same'));
+    sigmaRight = sqrt(conv2((right_im - left).^2,kernel,'same'));
 end
 
 for d=mindisp:maxdisp
@@ -29,9 +29,13 @@ for d=mindisp:maxdisp
     disp(idx) = (left_im(idx) - right_im(idx - h*d)).^2;
     depth_map(:,:,d+1) = conv2(disp,kernel,'same');
   elseif strcmp(cost, 'ncc')
-    disp(idx) = ((double(left_im(idx)) - left(idx)) .* (double(right_im(idx - h*d)) - right(idx - h*d)))./(sigmaLeft(idx) .* sigmaRight(idx-h*d));
-    depth_map(:,:,d+1) = conv2(disp,kernel,'same');
-  end    
+    disp(idx) = ((left_im(idx) - left(idx)) * (right_im(idx - h*d) - right(idx - h*d));
+    
+    sigmaLeft = left_
+  end
+  
+  
+    
 end
 
 % We get the disparity that got the minimal cost value
