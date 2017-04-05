@@ -142,20 +142,37 @@ randIndex = randi(size(x1,2));
 x1_match = homog(x1(:,randIndex));
 x2_match = homog(x2(:,randIndex));
 min_error = 10;
-%%
+%% Method #1
+% for p =1:4
+%     X_trian = triangulate(x1_match(1:2,:), x2_match(1:2,:), P1, Pc2{p}, [2 2]);
+%     X_ri1 = euclid(P1 * X_trian);
+%     X_ri2 = euclid(Pc2{p} * X_trian);
+%     
+%     errors_i1 = pdist([euclid(x1_match)' ; X_ri1']);
+%     errors_i2 = pdist([euclid(x2_match)' ; X_ri2']); 
+%     errors = [errors_i1 errors_i2];
+% 
+%     if mean(abs(errors(:))) < min_error
+%         min_error =  mean(abs(errors(:)));
+%         P_index = p;
+%     end
+% end
+%% Method #2
 for p =1:4
+    % Obtain the euclidean of the triangulated points (come out of triangulate in homogeneous coord.)
     X_trian = triangulate(x1_match(1:2,:), x2_match(1:2,:), P1, Pc2{p}, [2 2]);
-    X_ri1 = euclid(P1 * X_trian);
-    X_ri2 = euclid(Pc2{p} * X_trian);
-    
-    errors_i1 = pdist([euclid(x1_match)' ; X_ri1']);
-    errors_i2 = pdist([euclid(x2_match)' ; X_ri2']); 
-    errors = [errors_i1 errors_i2];
-
-    if mean(abs(errors(:))) < min_error
-        min_error =  mean(abs(errors(:)));
+    X_trian_euclid = euclid(X_trian);
+    % Get the projection of point X in second image.
+    ext_caract = inv(K) * Pc2{p};
+    Rp = ext_caract(:,1:3);
+    tp = ext_caract(:,4);
+    X_prime_euclid = Rp * X_trian_euclid + tp;
+    % Compare the Z coordinate to establish wether the point is in front of
+    % the camera.
+    if (X_trian_euclid(3) > 0 && X_prime_euclid(3) > 0 )
         P_index = p;
     end
+    
 end
 
 %% Reconstruct structure
@@ -170,6 +187,7 @@ N = size(x1,2);
 X = zeros(4,N);
 for i = 1:N
     X(:,i) = triangulate(x1(:,i), x2(:,i), P1, P2, [w h]);
+    
 end
 
 
@@ -179,7 +197,7 @@ r = interp2(double(Irgb{1}(:,:,1)), x1(1,:), x1(2,:));
 g = interp2(double(Irgb{1}(:,:,2)), x1(1,:), x1(2,:));
 b = interp2(double(Irgb{1}(:,:,3)), x1(1,:), x1(2,:));
 Xe = euclid(X);
-figure; hold on;
+figure(6); hold on;
 plot_camera(P1,w,h,'-');
 plot_camera(P2,w,h,'--');
 for i = 1:length(Xe)
@@ -229,12 +247,12 @@ l_img = rgb2gray(imread('Data/scene1.row3.col3.ppm'));
 r_img = rgb2gray(imread('Data/scene1.row3.col4.ppm'));
 
 disp_gt = imread('Data/truedisp.row3.col3.pgm');
-figure(1)
+figure(31)
 imshow(disp_gt);
 
-disparity = stereo_computation(l_img, r_img, 0, 16, 13, 'ncc');
+disparity = stereo_computation(l_img, r_img, 0, 16, 31, 'ssd','none');
 
-figure(2)
+figure(32)
 imshow(mat2gray(disparity));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -245,6 +263,13 @@ imshow(mat2gray(disparity));
 %
 % Evaluate the results changing the window size (e.g. 3x3, 9x9, 20x20,
 % 30x30) and the matching cost. Comment the results.
+l_img = rgb2gray(imread('Data/scene1.row3.col3.ppm'));
+r_img = rgb2gray(imread('Data/scene1.row3.col4.ppm'));
+
+disparity = stereo_computation(l_img, r_img, 0, 16, 31, 'ncc','none');
+
+figure(41)
+imshow(mat2gray(disparity));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. Depth map computation with local methods
@@ -254,6 +279,13 @@ imshow(mat2gray(disparity));
 % Test the functions implemented in the previous section with the facade
 % images. Try different matching costs and window sizes and comment the
 % results.
+l_img = rgb2gray(imread('Data/0001_rectified_s.png'));
+r_img = rgb2gray(imread('Data/0002_rectified_s.png'));
+
+disparity = stereo_computation(l_img, r_img, 0, 16, 11, 'ssd','none');
+
+figure(51)
+imshow(mat2gray(disparity));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 6. OPTIONAL: Bilateral weights

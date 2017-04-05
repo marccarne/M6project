@@ -1,4 +1,4 @@
-function [disparity]=stereo_computation(l_img, r_img, min_disp, max_disp, w_size, match_cost)
+function [disparity]=stereo_computation(l_img, r_img, min_disp, max_disp, w_size, match_cost,mode)
 % The input parameters are 5:
 % - left image
 % - right image

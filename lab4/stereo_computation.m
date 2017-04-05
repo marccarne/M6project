@@ -1,4 +1,4 @@
-function disparity = stereo_computation(l_img, r_img, mindisp, maxdisp, wsize, cost)
+function disparity = stereo_computation(l_img, r_img, mindisp, maxdisp, wsize, cost, mode)
 [h w]=size(l_img);
 
 % The depth map has to start at 1 because MATLAB
@@ -8,12 +8,17 @@ disp  = zeros(h,w);
 %kernel for convolution. It saves a lot of time and effort.
 kernel = ones(wsize);                      
 
+if strcmp(mode, 'none')
+    weights = 1/(wsize^2);
+elseif strcmp(mode, 'bilateral') 
+    %ToDo
+end    
 % We compute the sumatory of the regions windowed at each pixel for later,
 % in case we use ncc 
 if strcmp(cost, 'ncc')
-    left = conv2(double(l_img),double(kernel),'same')/wsize^2;
+    left = conv2(double(l_img),double(kernel),'same')*weights;
     sigmaLeft = sqrt(conv2((double(l_img) - left).^2,kernel,'same'));
-    right = conv2(double(r_img),double(kernel),'same')/wsize^2;
+    right = conv2(double(r_img),double(kernel),'same')*weights;
     sigmaRight = sqrt(conv2((double(r_img) - right).^2,kernel,'same'));
 end
 
@@ -31,6 +36,8 @@ for d=mindisp:maxdisp
     disp(idx) = ((double(l_img(idx)) - left(idx)) .* (double(r_img(idx - h*d)) - right(idx - h*d)))./(sigmaLeft(idx) .* sigmaRight(idx-h*d));
     % Correlation: high scores equal to matches. 
     depth_map(:,:,d+1) = 1 -conv2(disp,kernel,'same');
+  else
+    errordlg('Error, wrong cost model input');  
   end    
 end
 
