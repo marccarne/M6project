@@ -1,4 +1,7 @@
 function disparity = stereo_computation(l_img, r_img, mindisp, maxdisp, wsize, cost, mode)
+%This function returns a value of the local disparity with lowest cost
+%among each region of the left image. It effectuates a sweep to the right,
+%computing the intensity difference between two blocks of the images. 
 [h w]=size(l_img);
 
 % The depth map has to start at 1 because MATLAB
