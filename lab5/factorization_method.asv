@@ -1,12 +1,12 @@
 function [P, X] = factorization_method_andrea(x1, x2)
 % Normalize the points
-[x1, H1] = normalise2dpts(x1);
-[x2, H2] = normalise2dpts(x2);
+[x1, T1] = normalise2dpts(x1);
+[x2, T2] = normalise2dpts(x2);
 x{1} = x1;
 x{2} = x2;
 
 % Get F and the epipole
-[F, ~] = ransac_fundamental_matrix(x1, x2, 2.0); 
+[F, inliers] = ransac_fundamental_matrix(x1, x2, 2.0); 
 [~, ~, V] = svd(F');
 e = V(:,end);
 
@@ -75,7 +75,10 @@ while (abs(d - d_old)/d) >= 0.1
 end
 
 % De-normalise
-P{1} = H1\P{1};
-P{2} = H2\P{2};
+P{1} = inv(H1)*P{1};
+P{2} = inv(H2)*P{2}
 
+
+% 10_(Triangulate and resection the non-nucleus scene points and
+% cameras)
 end
