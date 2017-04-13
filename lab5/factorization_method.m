@@ -4,6 +4,8 @@ function [P,X] = factorization_method(x1,x2)
 
 [x1,H1] = normalise2dpts(x1);
 [x2,H2] = normalise2dpts(x2);
+x{1} = x1;
+x{2} = x2;
 
 % Initialize variables
 [F, Finliers] = ransac_fundamental_matrix(x1,x2,2.0);
@@ -19,28 +21,30 @@ d_old = 5;
 
 
 while(abs(d-d_old) >= 0.1)
-    lambda = [lambda1;lambda2] % 2xlength(x1) matrix
-    lambda_old = lambda;
+    lambda = [lambda1;lambda2]; % 2xlength(x1) matrix
+    
     similarity_matrix = 100;
     i = 0;
+    j =0;
     % Alternate rescalling rows and columns of matrix A until convergence
     while(similarity_matrix > 0.1)
         lambda_old = lambda;
         if(i == 0)
             % Normalize rows
             for i=1:size(lambda,2)
-            a = sum(lambda(:,i));
-            lambda(:,i) = lambda(:,i) ./ a;
+                a = sum(lambda(:,i));
+                lambda(:,i) = lambda(:,i) ./ a;
             end
         else
             % Normalize columns
             for i=1:size(lambda,1)
-            a = sum(lambda(i,:));
-            lambda(i,:) = lambda(i,:) ./ a;
+                a = sum(lambda(i,:));
+                lambda(i,:) = lambda(i,:) ./ a;
             end
         end
         i = 1 - i;
         similarity_matrix = sum(sum(abs(lambda-lambda_old)));
+        j = j+1
     end
     
     lambda1 = lambda(1,:);
@@ -86,9 +90,10 @@ end
 % De-normalise
 
 Pproj1 = P{1};
-Pproj1 = inv(T1)*Pproj1;
+Pproj1 = inv(H1)*Pproj1;
 Pproj2 = P{2};
-Pproj2 = inv(T2)*Pproj2;
-P = [Pproj1; Pproj2];
+Pproj2 = inv(H2)*Pproj2;
+P{1} = Pproj1;
+P{2} = Pproj2;
 
 end

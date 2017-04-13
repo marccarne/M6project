@@ -2,8 +2,9 @@
 %% Lab 5: Reconstruction from uncalibrated viewas
 
 
-addpath('week2/sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
-
+addpath('./../lab2/sift'); % ToDo: change 'sift' to the correct path where you have the sift functions
+addpath('./data');
+addpath('./vanishing_point');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 0. Create synthetic data
@@ -173,19 +174,19 @@ x2(3,:) = x2(3,:)./x2(3,:);
 %% Check projected points (estimated and data points)
 
 for i=1:2
-    x_proj{i} = euclid(Pproj(3*i-2:3*i, :)*Xproj);
+    x_proj{i} = euclid(Pproj{i}*Xproj);
 end
 x_d{1} = euclid(P1*Xh);
 x_d{2} = euclid(P2*Xh);
 
-% image 1
+%% image 1
 figure;
 hold on
 plot(x_d{1}(1,:),x_d{1}(2,:),'r*');
 plot(x_proj{1}(1,:),x_proj{1}(2,:),'bo');
 axis equal
 
-% image 2
+%% image 2
 figure;
 hold on
 plot(x_d{2}(1,:),x_d{2}(2,:),'r*');
@@ -259,6 +260,23 @@ v3p = vanishing_point(x2(:,1),x2(:,2),x2(:,4),x2(:,3));
 % ToDo: use the vanishing points to compute the matrix Hp that 
 %       upgrades the projective reconstruction to an affine reconstruction
 
+P1 = Pproj{1};
+P2 = Pproj{2};
+
+X1 = triangulate(v1, v1p, P1, P2, [width height]);
+X1 = homog(euclid(X1));
+
+X2 = triangulate(v2, v2p, P1, P2, [width height]);
+X2 = homog(euclid(X2));
+
+X3 = triangulate(v3, v3p, P1, P2, [width height]);
+X3 = homog(euclid(X3)); 
+
+m = [X1,X2,X3];
+[~,~,V] = svd(m'); 
+V = V(:,end);
+V = V/V(end);
+Hp = [1,0,0,0;0,1,0,0;0,0,1,0;V'];
 
 %% check results
 
