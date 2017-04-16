@@ -9,8 +9,12 @@ if nargin > 2
        0 0            1];
   P1 = H * P1;
   P2 = H * P2;
-  x1 = euclid(H * homog(x1));
-  x2 = euclid(H * homog(x2));
+  if size(x1,1) == 3  
+    x1 = euclid(H * x1);
+    x2 = euclid(H * x2);
+  else
+    x1 = euclid(H * homog(x1));
+    x2 = euclid(H * homog(x2));
 end
 
 % Create the design matrix A.
