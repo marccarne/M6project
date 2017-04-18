@@ -355,6 +355,7 @@ P = Pproj{1}*inv(Hp);
 M = P(:,1:3);
 
 B = inv(M'*W*M);
+
 A = chol(B);
 
 Ha = [inv(A'), [0;0;0];
@@ -414,11 +415,94 @@ Ncam = length(I);
 
 % ToDo: compute a projective reconstruction using the factorization method
 
+%% Compute keypoints and matches.
+points = cell(2,1);
+descr = cell(2,1);
+for i = 1:2
+    [points{i}, descr{i}] = sift(I{i}, 'Threshold', 0.01);
+    points{i} = points{i}(1:2,:);
+end
+
+matches = siftmatch(descr{1}, descr{2});
+
+[Pproj, Xproj] = factorization_method([points{1}(matches); ones(1,size(matches,2))],...
+                                      [points{2}(matches); ones(1,size(matches,2))]);
+
+% Plot matches.
+figure();
+plotmatches(I{1}, I{2}, points{1}, points{2}, matches, 'Stacking', 'v');
+
 % ToDo: show the data points (image correspondences) and the projected
 % points (of the reconstructed 3D points) in images 1 and 2. Reuse the code
 % in section 'Check projected points' (synthetic experiment).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Check projected points (estimated and data points)
+
+for i=1:2
+    x_proj{i} = euclid(Pproj{i}*Xproj); %Pproj(3*i-2:3*i, :)
+end
+x_d{1} = euclid(P1*Xh);
+x_d{2} = euclid(P2*Xh);
+
+% image 1
+figure;
+hold on
+plot(x_d{1}(1,:),x_d{1}(2,:),'r*');
+plot(x_proj{1}(1,:),x_proj{1}(2,:),'bo');
+axis equal
+
+% image 2
+figure;
+hold on
+plot(x_d{2}(1,:),x_d{2}(2,:),'r*');
+plot(x_proj{2}(1,:),x_proj{2}(2,:),'bo');
+
+
+%% Visualize projective reconstruction
+Xaux(1,:) = Xproj(1,:)./Xproj(4,:);
+Xaux(2,:) = Xproj(2,:)./Xproj(4,:);
+Xaux(3,:) = Xproj(3,:)./Xproj(4,:);
+X=Xaux;
+
+figure;
+hold on;
+X1 = X(:,1); X2 = X(:,2); X3 = X(:,3); X4 = X(:,4);
+plot3([X1(1) X2(1)], [X1(2) X2(2)], [X1(3) X2(3)]);
+plot3([X3(1) X4(1)], [X3(2) X4(2)], [X3(3) X4(3)]);
+X5 = X(:,5); X6 = X(:,6); X7 = X2; X8 = X3;
+plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
+plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
+plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
+plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
+X5 = X(:,7); X6 = X(:,8); X7 = X1; X8 = X4;
+plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
+plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
+plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
+plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
+X5 = X(:,9); X6 = X(:,10); X7 = X(:,11); X8 = X(:,12);
+plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
+plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
+plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
+plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
+X5 = X(:,13); X6 = X(:,14); X7 = X(:,15); X8 = X(:,16);
+plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
+plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
+plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
+plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
+X5 = X(:,17); X6 = X(:,18); X7 = X(:,19); X8 = X(:,20);
+plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
+plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
+plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
+plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
+X5 = X(:,21); X6 = X(:,22); X7 = X(:,23); X8 = X(:,24);
+plot3([X5(1) X6(1)], [X5(2) X6(2)], [X5(3) X6(3)]);
+plot3([X7(1) X8(1)], [X7(2) X8(2)], [X7(3) X8(3)]);
+plot3([X5(1) X7(1)], [X5(2) X7(2)], [X5(3) X7(3)]);
+plot3([X6(1) X8(1)], [X6(2) X8(2)], [X6(3) X8(3)]);
+axis vis3d
+axis equal
+
+
 %% 5. Affine reconstruction (real data)
 
 % ToDo: compute the matrix Hp that updates the projective reconstruction
@@ -431,6 +515,7 @@ Ncam = length(I);
 % This is an example on how to obtain the vanishing points (VPs) from three
 % orthogonal lines in image 1
 
+%Vanishing points of image 1
 img_in =  'Data/0000_s.png'; % input image
 folder_out = '.'; % output folder
 manhattan = 1;
@@ -440,6 +525,35 @@ params.PRINT = 1;
 params.PLOT = 1;
 [horizon, VPs] = detect_vps(img_in, folder_out, manhattan, acceleration, focal_ratio, params);
 
+%Vanishing points of image 2
+img_in =  'Data/0001_s.png'; % input image
+folder_out = '.'; % output folder
+manhattan = 1;
+acceleration = 0;
+focal_ratio = 1;
+params.PRINT = 1;
+params.PLOT = 1;
+[horizon, VPs] = detect_vps(img_in, folder_out, manhattan, acceleration, focal_ratio, params);
+
+%%
+P1 = Pproj{1};
+P2 = Pproj{2};
+width = 900;
+height = 600;   
+X1 = triangulate(v1(1:2), v1p(1:2), P1, P2, [width height]);
+X1 = homog(euclid(X1));
+
+X2 = triangulate(v2, v2p, P1, P2, [width height]);
+X2 = homog(euclid(X2));
+
+X3 = triangulate(v3, v3p, P1, P2, [width height]);
+X3 = homog(euclid(X3)); 
+
+m = [X1,X2,X3];
+[~,~,V] = svd(m'); 
+V = V(:,end);
+V = V/V(end);
+Hp = [1,0,0,0;0,1,0,0;0,0,1,0;V'];
 
 %% Visualize the result
 
