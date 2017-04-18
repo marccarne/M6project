@@ -353,7 +353,7 @@ W = [w(1), w(2), w(3);
 % P[M|m]
 P = Pproj{1}*inv(Hp);
 M = P(:,1:3);
-
+%%
 B = inv(M'*W*M);
 A = chol(B);
 
@@ -410,13 +410,64 @@ Irgb{2} = double(imread('Data/0001_s.png'))/255;
 I{1} = sum(Irgb{1}, 3) / 3; 
 I{2} = sum(Irgb{2}, 3) / 3;
 
+[width,height] = size(I{1});
 Ncam = length(I);
 
 % ToDo: compute a projective reconstruction using the factorization method
+points = cell(2,1);
+descr = cell(2,1);
+for i = 1:2
+    [points{i}, descr{i}] = sift(I{i}, 'Threshold', 0.01);
+    points{i} = points{i}(1:2,:);
+end
+
+matches = siftmatch(descr{1}, descr{2});
+
+% Fit Fundamental matrix and remove outliers.
+x1 = points{1}(:, matches(1, :));
+x2 = points{2}(:, matches(2, :));
+
+[F, inliers] = ransac_fundamental_matrix(homog(x1), homog(x2), 2.0);
+
+% Plot inliers.
+inlier_matches = matches(:, inliers);
+figure;
+plotmatches(I{1}, I{2}, points{1}, points{2}, inlier_matches, 'Stacking', 'v');
+
+x1 = points{1}(:, inlier_matches(1, :));
+x1 = homog(x1);
+x2 = points{2}(:, inlier_matches(2, :));
+x2 = homog(x2);
 
 % ToDo: show the data points (image correspondences) and the projected
 % points (of the reconstructed 3D points) in images 1 and 2. Reuse the code
 % in section 'Check projected points' (synthetic experiment).
+[Pproj, Xproj] = factorization_method(x1, x2);
+P1 = Pproj{1};
+P2 = Pproj{2};
+
+
+%% 
+for i=1:2
+    x_proj{i} = euclid(Pproj{i}*Xproj);
+end
+
+x_d{1} = x1;
+x_d{2} = x2;
+
+% image 1
+figure;
+hold on
+plot(x_d{1}(1,:),x_d{1}(2,:),'r*');
+plot(x_proj{1}(1,:),x_proj{1}(2,:),'bo');
+axis equal
+
+% image 2
+figure;
+hold on
+plot(x_d{2}(1,:),x_d{2}(2,:),'r*');
+plot(x_proj{2}(1,:),x_proj{2}(2,:),'bo');
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 5. Affine reconstruction (real data)
@@ -438,13 +489,54 @@ acceleration = 0;
 focal_ratio = 1;
 params.PRINT = 1;
 params.PLOT = 1;
-[horizon, VPs] = detect_vps(img_in, folder_out, manhattan, acceleration, focal_ratio, params);
+%[horizon, VPs] = detect_vps(img_in, folder_out, manhattan, acceleration, focal_ratio, params);
+%%
 
+%%Get the vanishing points from the computated ones (saves time and eases
+%installation)
+load('vanishingpoints1.mat', 'VPs1');
+load('vanishingpoints2.mat', 'VPs2');
+% Compute the vanishing points in each image
+v1 = VPs1(:,1);
+v1 = homog(v1);
+v2 = VPs1(:,2);
+v2 = homog(v2);
+v3 = VPs1(:,3);
+v3 = homog(v3);
+
+v1p = VPs2(:,1);
+v1p = homog(v1p);
+v2p = VPs2(:,2);
+v2p = homog(v2p);
+v3p = VPs2(:,3);
+v3p = homog(v3p);
+
+%% ToDo: use the vanishing points to compute the matrix Hp that 
+%       upgrades the projective reconstruction to an affine reconstruction
+X1 = triangulate(v1, v1p, P1, P2, [width height]);
+X1 = homog(euclid(X1));
+X1 = X1 ./ repmat(X1(end,:), size(X1,1), 1);
+
+X2 = triangulate(v2, v2p, P1, P2, [width height]);
+X1 = homog(euclid(X1));
+X2 = X2 ./ repmat(X2(end,:), size(X2,1), 1);
+
+X3 = triangulate(v3, v3p, P1, P2, [width height]);
+X1 = homog(euclid(X1));
+X3 = X3 ./ repmat(X3(end,:), size(X3,1), 1);
+
+matrix = [X1,X2,X3];
+[~,~,V] = svd(matrix'); % 3x4 matrix
+V = V(:,end);
+V = V/V(end);
+Hp = [1,0,0,0;0,1,0,0;0,0,1,0;V'];
 
 %% Visualize the result
 
 % x1m are the data points in image 1
 % Xm are the reconstructed 3D points (projective reconstruction)
+Xm = Hp*Xproj;
+x1m = x1;
 
 r = interp2(double(Irgb{1}(:,:,1)), x1m(1,:), x1m(2,:));
 g = interp2(double(Irgb{1}(:,:,2)), x1m(1,:), x1m(2,:));
@@ -452,6 +544,7 @@ b = interp2(double(Irgb{1}(:,:,3)), x1m(1,:), x1m(2,:));
 Xe = euclid(Hp*Xm);
 figure; hold on;
 [w,h] = size(I{1});
+%%
 for i = 1:length(Xe)
     scatter3(Xe(1,i), Xe(2,i), Xe(3,i), 2^2, [r(i) g(i) b(i)], 'filled');
 end;
@@ -462,7 +555,60 @@ axis equal;
 
 % ToDo: compute the matrix Ha that updates the affine reconstruction
 % to a metric one and visualize the result in 3D as in the previous section
+v1 = VPs1(:,1);
+v1 = homog(v1);
+v2 = VPs1(:,2);
+v2 = homog(v2);
+v3 = VPs1(:,3);
+v3 = homog(v3);
 
+u = v1;
+v = v2;
+z = v3;
+
+Amat = ...
+    [u(1)*v(1), u(1)*v(2)+u(2)*v(1), u(1)*v(3)+u(3)*v(1), u(2)*v(2), u(2)*v(3)+u(3)*v(2), u(3)*v(3);
+     u(1)*z(1), u(1)*z(2)+u(2)*z(1), u(1)*z(3)+u(3)*z(1), u(2)*z(2), u(2)*z(3)+u(3)*z(2), u(3)*z(3);
+     v(1)*z(1), v(1)*z(2)+v(2)*z(1), v(1)*z(3)+v(3)*z(1), v(2)*z(2), v(2)*z(3)+v(3)*z(2), v(3)*z(3);
+     0        , 1                  , 0                  , 0        , 0                  , 0        ;
+     1        , 0                  , 0                  , -1       , 0                  , 0        ];
+
+[~,~,V] = svd(Amat);
+w = V(:,end);
+
+W = [w(1), w(2), w(3);
+     w(2), w(4), w(5);
+     w(3), w(5), w(6)];
+
+%% P[M|m]
+P = Pproj{1}*inv(Hp);
+M = P(:,1:3);
+%%
+B = inv(M'*W*M);
+A = chol(B);
+
+Ha = [inv(A'), [0;0;0];
+      0, 0, 0, 1];
+  
+  
+%% Visualize the result
+
+% x1m are the data points in image 1
+% Xm are the reconstructed 3D points (projective reconstruction)
+Xm =Ha*Hp*Xproj;
+x1m = x1;
+
+r = interp2(double(Irgb{1}(:,:,1)), x1m(1,:), x1m(2,:));
+g = interp2(double(Irgb{1}(:,:,2)), x1m(1,:), x1m(2,:));
+b = interp2(double(Irgb{1}(:,:,3)), x1m(1,:), x1m(2,:));
+Xe = euclid(Hp*Xm);
+figure; hold on;
+[w,h] = size(I{1});
+%%
+for i = 1:length(Xe)
+    scatter3(Xe(1,i), Xe(2,i), Xe(3,i), 2^2, [r(i) g(i) b(i)], 'filled');
+end;
+axis equal;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 7. OPTIONAL: Projective reconstruction from two views
 
